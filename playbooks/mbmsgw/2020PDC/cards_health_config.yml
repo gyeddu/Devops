@@ -1,0 +1,69 @@
+---
+
+- hosts: zrdm52afmgw01
+  gather_facts: false
+
+  vars_files:
+    - zrdm52afmgw01_enc.var
+
+  tasks:
+
+    - name: post spin-up health check cards status 
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      loop:
+        - show chassis
+        - show card 1 detail
+        - show card 2 detail
+        - show card 3 detail
+        - show card 4 detail
+ 
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+    - debug: var=result.results[2].stdout_lines
+    - debug: var=result.results[3].stdout_lines
+    - debug: var=result.results[4].stdout_lines
+
+    - name: cards configuration
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      loop:
+        - config
+        - card 1 type vsfo
+        - card 2 type vsfo
+        - card 3 type vsfo
+        - card 4 type vsfo
+        - commit
+        - exit      
+
+    - name: let's wait to commit and exit
+      pause:
+        seconds: 30
+
+    - name: post spin-up health check cards status
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      loop:
+        - show chassis
+        - show card 1 detail
+        - show card 2 detail
+        - show card 3 detail
+        - show card 4 detail
+        - show system-state clock
+        - show fm alarm
+        - show memory 
+
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+    - debug: var=result.results[2].stdout_lines
+    - debug: var=result.results[3].stdout_lines
+    - debug: var=result.results[4].stdout_lines
+    - debug: var=result.results[5].stdout_lines
+    - debug: var=result.results[6].stdout_lines
+    - debug: var=result.results[7].stdout_lines

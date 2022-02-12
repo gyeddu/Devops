@@ -1,0 +1,72 @@
+---
+
+- hosts: mbmsgw250
+  gather_facts: false
+
+  tasks:
+
+    - name: register local config
+      cli_command:
+        command: show running-config contexts context local | include telnet
+      register: result
+
+    - name: show local config
+      debug:
+        msg: "{{result.stdout_lines}}"
+
+    - name: add telnet service
+      cli_command:
+        command: '{{ item }}'
+      with_items:
+      - config
+      - contexts context local
+      - no service telnet server
+      - no service telnet client
+      - commit
+      - exit
+
+    - name: let's wait to commit and exit
+      pause:
+        seconds: 30
+
+    - name: register local config
+      cli_command:
+        command: show running-config contexts context local | include telnet
+      register: result
+
+    - name: show local config
+      debug:
+        msg: "{{result.stdout_lines}}"
+
+#TASK [register local config] ******************************************************************************************************************************************
+#ok: [107.124.224.27]
+#
+#TASK [show local config] **********************************************************************************************************************************************
+#ok: [107.124.224.27] => {
+#    "msg": [
+#        "service telnet server",
+#        " service telnet client"
+#    ]
+#}
+#
+#TASK [add telnet service] *********************************************************************************************************************************************
+#ok: [107.124.224.27] => (item=config)
+#ok: [107.124.224.27] => (item=contexts context local)
+#ok: [107.124.224.27] => (item=no service telnet server)
+#ok: [107.124.224.27] => (item=no service telnet client)
+#ok: [107.124.224.27] => (item=commit)
+#ok: [107.124.224.27] => (item=exit)
+#
+#TASK [let's wait to commit and exit] **********************************************************************************************************************************
+#Pausing for 30 seconds
+#(ctrl+C then 'C' = continue early, ctrl+C then 'A' = abort)
+#ok: [107.124.224.27]
+#
+#TASK [register local config] ******************************************************************************************************************************************
+#ok: [107.124.224.27]
+#
+#TASK [show local config] **********************************************************************************************************************************************
+#ok: [107.124.224.27] => {
+#    "msg": []
+#}
+

@@ -1,0 +1,12 @@
+---
+
+  - hosts: mdfdb
+   
+    vars_files:
+      - zrdm52afbms01_enc.var
+  
+    tasks:
+    - fetch: 
+        src: /opt/ericsson/deployer/bdc/utils/openstack/license/lockingcode
+        dest: /home/qh378r/{{ansible_facts.nodename}}fingerprint.txt
+        flat: yes

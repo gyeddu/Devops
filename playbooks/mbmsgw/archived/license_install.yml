@@ -1,0 +1,115 @@
+---
+
+- hosts: mbmsgw224
+  gather_facts: false
+
+  tasks:
+
+    - name: fingerprints to request license
+      cli_command:
+        command: show lm finger print
+      register:result
+
+    - debug: var=result.stdout_lines
+
+    - name: context m1 config
+      cli_command:
+        command: '{{ item }}'
+
+      with_items:
+      - config
+      - epg node feature-activation integrated-traffic-capture
+      - commit
+      - exit
+
+    - name: let's wait to commit and exit
+      pause:
+        seconds: 30
+
+    - name: copy license file form ansible home to MBMS GW
+      net_put:
+        src: 107-124-250-27_200320_181340_1.xml
+        protocol: sftp
+        dest: /flash/107-124-250-27_200320_181340_1.xml
+
+    - name: copy license file form ansible home to MBMS GW
+      net_put:
+        src: 107-124-250-27_200320_181340.xml
+        protocol: sftp
+        dest: /flash/107-124-250-27_200320_181340.xml
+
+    - name: list license files
+      find:
+        paths: /flash
+        patterns: 107-124-250-27_200320_181340*.xml
+
+
+    - name: check alarms
+      cli_command:
+        command: '{{ item }}'
+      register:result
+
+      with_items:
+      - show fm alarm
+      - show lm state
+
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+
+    - name: install the IPOS LKF
+      cli_command:
+        command: '{{ item }}'
+
+      with_items:
+      - lm key-file-management install-key-file uri file:///flash/107-124-250-27_200320_181340_1.xml password nopass
+      - lm publish-license-inventory
+      - lm refresh-license-inventory
+
+    - name: check alarms
+      cli_command:
+        command: '{{ item }}'
+      register:result
+
+      with_items:
+      - show lm key-file-management report-progress
+      - show lm lm last-license-inventory-refresh
+      - show fm alarm
+
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+    - debug: var=result.results[2].stdout_lines
+
+    - name: install the application LKF
+      cli_command:
+        command: '{{ item }}'
+
+      with_items:
+      - lm key-file-management install-key-file uri file:///flash/107-124-250-27_200320_181340.xml password nopass
+      - lm publish-license-inventory
+      - lm refresh-license-inventory
+
+    - name: check alarms
+      cli_command:
+        command: '{{ item }}'
+      register:result
+
+      with_items:
+      - show lm key-file-management report-progress
+      - show lm lm last-license-inventory-refresh
+      - show fm alarm
+
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+    - debug: var=result.results[2].stdout_lines
+
+    - name: remove license files
+      file:
+        path: /flash/107-124-250-27_200320_181340*.xml
+        state: absent
+
+    - name: verify the status
+      cli_command:
+        command: show lm feature-key
+      register:result
+
+    - debug: var=result.stdout_lines

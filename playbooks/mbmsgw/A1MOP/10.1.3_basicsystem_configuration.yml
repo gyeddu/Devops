@@ -1,0 +1,106 @@
+---
+
+- hosts: zrdm55afmgw01
+  gather_facts: false
+
+  vars_files:
+    - zrdm55afmgw01_enc.var
+
+  tasks:
+
+    - name: ntp server
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      loop:
+        - config
+        - system ntp server {{NTPServer1}} association-type server version 3 context local udp address {{NTPServer1}}
+        - system ntp server {{NTPServer2}} association-type server version 3 context local udp address {{NTPServer2}}
+        - system ntp server {{NTPServer3}} association-type server version 3 context local udp address {{NTPServer3}}
+        - top
+        - show config
+        - commit
+        - end
+
+    - debug: var=result.results[5].stdout_lines
+         
+    - name: let's wait to commit and exit
+      pause:
+        seconds: 30
+
+    - name: show ntp server
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      loop:
+        - show ntp associations
+        - show running-config system ntp
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+
+    - name: snmp server
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      loop:
+        - config
+        - contexts context local
+        - service snmp-server
+        - contexts snmp server enterprise ericsson enhance-ifmib
+        - contexts snmp server traps nemib non-exclusive
+        - contexts snmp view Inet_View internet restriction included
+        - contexts snmp view all internet restriction included
+
+        - contexts snmp target {{SNMP_Target_Name1}} transport ip {{SNMP_Target_IP1}}
+        - transport security-params security-name community-string community-string {{SNMP_Community}}
+        - transport security-params security-name community-string version v2c
+        - transport security-params view all
+        - contexts snmp community {{SNMP_Community}} all-contexts view all access read-write
+
+        - contexts snmp target {{SNMP_Target_Name2}} transport ip {{SNMP_Target_IP2}}
+        - transport security-params security-name community-string community-string {{SNMP_Community}}
+        - transport security-params security-name community-string version v2c
+        - transport security-params view all
+        - contexts snmp community {{SNMP_Community}} all-contexts view all access read-write
+
+        - top
+        - show config
+        - commit
+        - exit
+
+    - debug: var=result.results[12].stdout_lines
+          
+
+    - name: let's wait to commit and exit
+      pause:
+        seconds: 30
+
+    - name: show snmp server
+      cli_command:
+        command: show running-config contexts snmp
+      register: result
+
+    - debug: var=result.stdout_lines
+
+    - name: syslog server
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      loop:
+        - config
+        - contexts context local
+        - logging syslog {{MBMSGW_OAM_IP}}
+        - top
+        - show config  
+        - commit
+        - exit
+
+    - name: let's wait to commit and exit
+      pause:
+        seconds: 30
+
+    - debug: var=result.results[4].stdout_lines      

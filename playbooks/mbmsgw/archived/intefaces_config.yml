@@ -1,0 +1,175 @@
+---
+
+- hosts: mbmsgw224
+  gather_facts: false
+
+  tasks:
+
+    - name: m1 interfaces config
+      cli_command:
+        command: '{{ item }}'
+
+      with_items:
+      - config
+      - interfaces interface if-m1-1@m1 type ipForward
+      - l3-interface context m1
+      - l3-interface ipv6 mtu 2000
+      - l3-interface ipv6 address addr-primary fd00:2600:2600:105::1/64
+      - interfaces interface if-m1-2@m1 type ipForward
+      - l3-interface context m1
+      - l3-interface ipv6 mtu 2000
+      - l3-interface ipv6 address addr-primary fd00:2600:2600:106::1/64
+      - interfaces interface 1/1 type ethernetCsmacd enabled true
+      - ethernet bind-interface intf-name if-m1-1@m1
+      - ethernet bind-interface intf-ctx m1
+      - ethernet mtu 2000
+      - interfaces interface 2/1 type ethernetCsmacd enabled true
+      - ethernet bind-interface intf-name if-m1-2@m1
+      - ethernet bind-interface intf-ctx m1
+      - ethernet mtu 2000
+      - commit
+      - exit
+
+    - name: let's wait to commit and exit
+      pause:
+        seconds: 30
+
+    - name: m1 interfaces running-config
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      with_items:
+      - show running-config interfaces interface if-m1-1@m1
+      - show running-config interfaces interface if-m1-2@m1
+      - show running-config interfaces interface 1/1
+      - show running-config interfaces interface 2/1
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+    - debug: var=result.results[2].stdout_lines
+    - debug: var=result.results[3].stdout_lines
+
+    - name: sm interfaces config
+      cli_command:
+        command: '{{ item }}'
+
+      with_items:
+      - config
+      - interfaces interface if-sm-1@sm type ipForward
+      - l3-interface context sm
+      - l3-interface ip mtu 2000
+      - l3-interface ip address addr-primary addr 107.243.232.3/28
+      - interfaces interface if-sm-2@sm type ipForward
+      - l3-interface context sm
+      - l3-interface ip mtu 2000
+      - l3-interface ip address addr-primary addr 107.243.232.19/28
+      - interfaces interface 3/1 type ethernetCsmacd enabled true
+      - ethernet bind-interface intf-name if-sm-1@sm
+      - ethernet bind-interface intf-ctx sm
+      - interfaces interface 4/1 type ethernetCsmacd enabled true
+      - ethernet bind-interface intf-name if-sm-2@sm
+      - ethernet bind-interface intf-ctx sm
+      - commit
+      - exit
+
+    - name: let's wait to commit and exit
+      pause:
+        seconds: 30
+
+    - name: sm interfaces running-config
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      with_items:
+      - show running-config interfaces interface if-sm-1@sm
+      - show running-config interfaces interface if-sm-2@sm
+      - show running-config interfaces interface 3/1
+      - show running-config interfaces interface 4/1
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+    - debug: var=result.results[2].stdout_lines
+    - debug: var=result.results[3].stdout_lines
+
+    - name: sgimb interfaces config
+      cli_command:
+        command: '{{ item }}'
+
+      with_items:
+      - config
+      - interfaces interface if-sgimb-1@sgimb type ipForward
+      - l3-interface context sgimb
+      - l3-interface ipv6 mtu 2000
+      - l3-interface ipv6 address addr-primary fd00:c000:100:b80::3/64
+      - interfaces interface if-sgimb-2@sgimb type ipForward
+      - l3-interface context sgimb
+      - l3-interface ipv6 mtu 2000
+      - l3-interface ipv6 address addr-primary fd00:c000:100:b81::3/64
+      - interfaces interface 1/2 type ethernetCsmacd enabled true
+      - ethernet bind-interface intf-name if-sgimb-1@sgimb
+      - ethernet bind-interface intf-ctx sgimb
+      - ethernet mtu 2000
+      - interfaces interface 2/2 type ethernetCsmacd enabled true
+      - ethernet bind-interface intf-name if-sgimb-2@sgimb
+      - ethernet bind-interface intf-ctx sgimb
+      - ethernet mtu 2000
+      - commit
+      - exit
+
+    - name: sgimb interfaces running-config
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      with_items:
+      - show running-config interfaces interface if-sgimb-1@sgimb
+      - show running-config interfaces interface if-sgimb-2@sgimb
+      - show running-config interfaces interface 1/2
+      - show running-config interfaces interface 2/2
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+    - debug: var=result.results[2].stdout_lines
+    - debug: var=result.results[3].stdout_lines
+
+    - name: sgmb interfaces config
+      cli_command:
+        command: '{{ item }}'
+
+      with_items:
+      - config
+      - interfaces interface if-sgmb-1@sgmb type ipForward
+      - l3-interface context sgmb
+      - l3-interface ipv6 mtu 2000
+      - l3-interface ipv6 address addr-primary fd00:c000:100:b83::3/64
+      - interfaces interface if-sgmb-2@sgmb type ipForward
+      - l3-interface context sgmb
+      - l3-interface ipv6 mtu 2000
+      - l3-interface ipv6 address addr-primary fd00:c000:100:b84::3/64
+      - interfaces interface 3/2 type ethernetCsmacd enabled true
+      - ethernet bind-interface intf-name if-sgmb-1@sgmb
+      - ethernet bind-interface intf-ctx sgmb
+      - interfaces interface 4/2 type ethernetCsmacd enabled true
+      - ethernet bind-interface intf-name if-sgmb-2@sgmb
+      - ethernet bind-interface intf-ctx sgmb
+      - commit
+      - exit
+
+    - name: let's wait to commit and exit
+      pause:
+        seconds: 30
+
+    - name: sgmb interfaces running-config
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      with_items:
+      - show running-config interfaces interface if-sgmb-1@sgmb
+      - show running-config interfaces interface if-sgmb-2@sgmb
+      - show running-config interfaces interface 3/2
+      - show running-config interfaces interface 4/2
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+    - debug: var=result.results[2].stdout_lines
+    - debug: var=result.results[3].stdout_lines
+      

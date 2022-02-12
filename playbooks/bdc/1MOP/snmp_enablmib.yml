@@ -1,0 +1,62 @@
+---
+
+- hosts: mdf
+  become: yes
+  gather_facts: true
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+
+    - name: Back up proxyCfg.xml
+      copy:
+        src: /usr/local/esa/conf/proxyCfg.xml
+        dest: /usr/local/esa/conf/proxyCfg.xml.{{ansible_date_time.iso8601_basic_short}}
+        owner: root
+        group: root
+        mode: '0600'
+
+    - shell: ls -al /usr/local/esa/conf/proxyCfg.xml*
+      register: result
+    - debug: var=result.stdout_lines
+
+    - name: enable snmpd mib @1.3.6.1.2.1.16
+      lineinfile:
+        insertafter: "<!-- mib-2, rmon -->"
+        regexp: '<proxyDefinition active="no">'
+        state: present
+        firstmatch: yes
+        path: /usr/local/esa/conf/proxyCfg.xml
+        line:           <proxyDefinition active="yes">
+
+    - name: enable snmpd mib @1.3.6.1.2.1.25
+      lineinfile:
+        insertafter: "<!-- mib-2, host -->"
+        regexp: '<proxyDefinition active="no">'
+        state: present
+        firstmatch: yes
+        path: /usr/local/esa/conf/proxyCfg.xml
+        line:           <proxyDefinition active="yes">
+
+    - name: change port mib @1.3.6.1.2.1.25
+      lineinfile:
+        insertafter: "<!-- mib-2, host -->"
+        regexp: '<port.*t>'
+        state: present
+        firstmatch: yes
+        path: /usr/local/esa/conf/proxyCfg.xml
+        line:                   <port>58161</port>
+
+    - name: change securityName mib @1.3.6.1.2.1.25
+      lineinfile:
+        insertafter: "<!-- mib-2, host -->"
+        regexp: '<security.*Name>'
+        state: present
+        firstmatch: yes
+        path: /usr/local/esa/conf/proxyCfg.xml
+        line:                   <securityName>redhat</securityName>
+
+    - shell: cat /usr/local/esa/conf/proxyCfg.xml
+      register: result
+    - debug: var=result.stdout_lines

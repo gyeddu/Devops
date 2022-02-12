@@ -1,0 +1,14 @@
+---
+
+- hosts: mdf
+  gather_facts: false
+  become: yes
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+     - name: restart service sshd
+       service:
+         name: sshd
+         state: restarted

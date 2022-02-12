@@ -1,0 +1,47 @@
+---
+
+- hosts: zrdm55afmgw01
+  gather_facts: false
+
+  vars_files:
+    - zrdm55afmgw01_enc.var
+
+  tasks:
+
+    - name: gtac/tacacs config
+      cli_command:
+        command: '{{ item }}'
+
+      loop:
+        - config
+        - system authentication user-authentication-order [ local-users tacacsplus ]
+        - interfaces interface mgmt@local
+        - l3-interface ip source-address options tacacs-plus
+        - system tacacsplus timeout {{gtac_timeout}}
+        - system tacacsplus max-retries {{gtac_retries}}
+        - system tacacsplus deadtime {{gtac_deadtime}}
+        - system tacacsplus server {{gtac_server1}} {{gtac_port}} key {{gtac_key}}
+        - system tacacsplus server {{gtac_server2}} {{gtac_port}} key {{gtac_key}}
+        - commit
+        - exit
+
+    - name: let's wait to commit and exit, DO NOT hit any key
+      pause:
+        seconds: 30
+
+    - name:  tacacs running-config
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      with_items:
+      - show running-config system authentication user-authentication-order
+      - show running-config interfaces interface mgmt@local|include tacacs
+      - show running-config system tacacsplus
+      - show tacacsplus server
+
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+    - debug: var=result.results[2].stdout_lines
+    - debug: var=result.results[3].stdout_lines      
+

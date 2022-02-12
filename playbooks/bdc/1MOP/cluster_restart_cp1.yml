@@ -1,0 +1,4 @@
+---
+
+- include: cluster_stop_cp1.yml
+- include: cluster_start_cp1.yml

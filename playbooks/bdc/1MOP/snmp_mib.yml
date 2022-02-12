@@ -1,0 +1,38 @@
+---
+
+- hosts: mdf
+  gather_facts: true
+  become: yes
+ 
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+
+  tasks:
+    - name: Back up snmptrapd.conf
+      copy:
+        src: /etc/snmp/snmptrapd.conf
+        remote_src: yes
+        dest: /etc/snmp/snmptrapd.conf.{{ansible_date_time.iso8601_basic_short}}
+        owner: root
+        group: root
+        mode: '0600'
+
+    - name: parameters and their values
+      shell: egrep 'SNMPv2' /etc/snmp/snmptrapd.conf
+      register: result
+
+    - debug: var=result.stdout_lines
+
+    - name: add 
+      lineinfile:
+        path: /etc/snmp/snmptrapd.conf.20210209-2035
+        insertafter: "SNMPv2-MIB::coldStart"
+        line: "mibs +SNMPv2-MIB:SNMP-COMMUNITY-MIB:NET-SNMP-MIB:HOST-RESOURCES-MIB"
+        state: present
+
+    - name: parameters and their values
+      shell: egrep 'SNMPv2' /etc/snmp/snmptrapd.conf
+      register: result
+
+    - debug: var=result.stdout_lines

@@ -1,0 +1,39 @@
+---
+
+- hosts: mdf
+  gather_facts: true
+  become: yes
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+
+  tasks:
+    - name: Back up sshd_config
+      copy:
+        src: /etc/ssh/sshd_config
+        remote_src: yes
+        dest: /etc/rsyslog.conf.{{ansible_date_time.iso8601_basic_short}}
+        owner: root
+        group: root
+        mode: '0644'
+          
+    - name: locate to to insertafter
+      shell: egrep 'remote-host' /etc/rsyslog.conf
+      register: result
+
+    - debug: var=result.stdout_lines
+
+    - name: set syslog server
+      lineinfile:
+        path: /etc/rsyslog.conf
+        insertafter: "remote-host:514"
+        line: "*.* @{{SyslogServer}}:1551"
+        state: present
+
+    - name: confirm insertion
+      shell: egrep '\*\.\*' /etc/rsyslog.conf
+      register: result
+
+    - debug: var=result.stdout_lines

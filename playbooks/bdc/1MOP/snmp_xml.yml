@@ -1,0 +1,28 @@
+---
+
+- hosts: mdf 
+  gather_facts: true
+  become: yes
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+
+    - name: Add communityString
+      community.general.xml:
+        path: /usr/local/esa/conf/communityCfg.xml
+        xpath: /CommunityCfg/community[last()]
+        input_type: xml
+        add_children:
+          - "<community active=yes><communityString>'{{SNMPComm}}'</communityString><securityName>v1v2ReadWriteSecName</securityName></community>"
+      register: xmlresp
+
+    - debug: var=xmlresp
+
+    - name: parameters and their values
+      shell: cat /home/qh378r/communityCfg.xml
+      register: result
+
+    - debug: var=result.stdout_lines
+

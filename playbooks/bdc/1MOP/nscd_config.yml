@@ -1,0 +1,23 @@
+---
+
+- hosts: mdf 
+  become: yes
+  gather_facts: false
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+
+    - name: enable snmpd mibs
+      shell: '{{ item }}'
+
+      loop:
+        - sed -i '/^#\sCurrent.*services/,/\tparanoia\t\tno/s/\tno/\tyes/' /etc/nscd.conf
+        - sed -i '/^#\sCurrent.*services/,/#\trestart-interval\t3600/s/^#\trestart/\trestart/' /etc/nscd.conf
+
+    - shell: grep Currently /etc/nscd.conf -A 12 -B 12
+      register: result
+    - debug: var=result.stdout_lines
+
+

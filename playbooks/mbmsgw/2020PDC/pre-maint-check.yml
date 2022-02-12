@@ -1,0 +1,27 @@
+---
+
+- hosts: zrdm52afmgw01
+  gather_facts: false
+
+  vars_files:
+    - zrdm52afmgw01_enc.var
+
+  tasks:
+
+    - name: post spin-up check-points
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      loop:
+        - show running-config interfaces interface management
+        - show running-config interfaces interface mgmt@local
+        - show running-config contexts context local
+        - show service
+        - show lm fingerprint
+
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+    - debug: var=result.results[2].stdout_lines
+    - debug: var=result.results[3].stdout_lines
+    - debug: var=result.results[4].stdout_lines

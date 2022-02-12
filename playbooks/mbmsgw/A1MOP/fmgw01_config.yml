@@ -1,0 +1,14 @@
+---
+
+- include: 10.1.1_preliminary_verification_and_cards_activation.yml
+- include: 10.1.2_basicsystem_verification.yml
+- include: 10.1.3_basicsystem_configuration.yml
+- include: 10.1.4_interfaces_configuration.yml
+- include: 10.1.5_contexts_configuration.yml
+- include: 10.1.6_application_configuration.yml
+- include: 10.1.7_PM_Job_Configuration.yml
+- include: 10.1.8_gtac_configuration.yml
+- include: 10.1.9_PDC_Custom_Configuration.yml
+- include: 10.1.10_install_license.yml
+- include: 10.1.11_health_check.yml
+- include: 10.1.12_backup_configuration.yml

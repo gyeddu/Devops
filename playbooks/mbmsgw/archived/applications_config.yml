@@ -1,0 +1,125 @@
+---
+
+- hosts: mbmsgw250
+  gather_facts: false
+
+  tasks:
+
+#IQ
+#Node-Name: mbmsgw-01
+#sm-diffserv: af21
+#m1-diffserv: cs3
+#ssm-range: ff3e::8000:0/116
+#mme-list       mme-address
+#cal-realm: ericsson.com
+#local-host-name: zrdm54cfmgw01
+#remote-diameter-name1: bmsc-1
+#remote-address1: fd00:c000:100:225::4
+#remote-diameter-peer2: bmsc-2
+#remote-address2: fd00:c000:100:225::5
+#destination-realm: ericsson.com
+#m1-vip: 2606:ae00:2f00:242::1/128
+#sgimb-vip: 2606:ae00:2f00:210::1/128
+#sgmb-vip: 2606:ae00:2f00:211::1/128
+#sm-vip: 107.119.170.33/32
+
+
+    - name: applications config
+      cli_command:
+        command: '{{ item }}'
+
+      with_items:
+      - config
+      - epg mbmsgw interface sm logical-interface sm
+      - epg mbmsgw interface sm t3-response-time 4
+      - epg mbmsgw interface sm n3-requests 2
+      - epg mbmsgw interface sm diffserv af21
+      - epg mbmsgw interface sm echo-interval 60
+      - epg mbmsgw interface sgmb diameter-application-system embms
+      - epg mbmsgw interface sgimb logical-interface sgimb
+      - epg mbmsgw interface sgimb udp-port-range range-start 1024
+      - epg mbmsgw interface sgimb udp-port-range range-end 65535
+      - epg mbmsgw interface m1 logical-interface m1
+      - epg mbmsgw interface m1 diffserv cs3
+      - epg mbmsgw interface m1 ssm-ipv6-address ff3e::8000:0/116
+      - epg mbmsgw mme-list DSTEST-MME
+      - address 107.119.137.220
+      - epg mbmsgw mme-list MME-04
+      - address 107.119.137.196
+      - epg mbmsgw mme-list MME-20
+      - address 172.19.56.119
+      - epg mbmsgw mme-list WTCMME09LTZ
+      - address 172.19.49.58
+      - epg mbmsgw mme-list WTCMME18LTZ
+      - address 172.27.84.164
+      - epg mbmsgw mme-list WTCMME19LTZ
+      - address 172.19.56.80
+      - epg node board-allocation gc-0/3/1
+      - epg node board-allocation gc-0/4/1
+      - epg node board-allocation gu-0/1/1
+      - epg node board-allocation gu-0/2/1
+      - epg node diameter local-realm rdm54cf.eric01.sgmb
+      - epg node diameter local-host-name vsfo-cp.rdm54cf.mgw01.sgmb
+      - epg node diameter remote-diameter-peer bmsc-1
+      - logical-interface sgmb
+      - address           fd00:c000:100:225::4
+      - port              3869
+      - watchdog          6
+      - epg node diameter remote-diameter-peer bmsc-2
+      - logical-interface sgmb
+      - address           fd00:c000:100:225::5
+      - port              3869
+      - watchdog          6
+      - epg node diameter diameter-application-system embms
+      - destination-realm ericsson.com
+      - application-id    sgmb
+      - peer bmsc-1
+      - priority 0
+      - peer bmsc-2
+      - priority 1
+      - epg node logical-interface m1
+      - routing-instance m1
+      - ipv6-address     2606:ae00:2f00:242::1/128
+      - epg node logical-interface sgimb
+      - routing-instance sgimb
+      - ipv6-address     2606:ae00:2f00:210::1/128
+      - epg node logical-interface sgmb
+      - routing-instance sgmb
+      - ipv6-address     2606:ae00:2f00:211::1/128
+      - epg node logical-interface sm
+      - routing-instance sm
+      - address          107.119.170.33/32
+      - top
+      - show configuration
+      - commit check
+      - commit
+      - exit
+
+    - name: let's wait to commit and exit
+      pause:
+        seconds: 30
+
+    - name:  applications running-config
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      with_items:
+      - show running-config epg mbmsgw node
+      - show running-config epg mbmsgw interface sm
+      - show running-config epg mbmsgw interface sgmb
+      - show running-config epg mbmsgw interface sgimb
+      - show running-config epg mbmsgw interface m1
+      - show running-config epg mbmsgw mme-list
+      - show running-config epg node board-allocation
+      - show running-config epg node diameter
+      - show running-config epg node logical-interface
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+    - debug: var=result.results[2].stdout_lines
+    - debug: var=result.results[3].stdout_lines
+    - debug: var=result.results[4].stdout_lines
+    - debug: var=result.results[5].stdout_lines
+    - debug: var=result.results[6].stdout_lines
+    - debug: var=result.results[7].stdout_lines
+    - debug: var=result.results[8].stdout_lines

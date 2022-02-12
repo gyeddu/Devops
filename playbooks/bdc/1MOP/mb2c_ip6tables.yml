@@ -1,0 +1,24 @@
+---
+
+- hosts: mdfcp
+  become: yes
+  gather_facts: false
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+    - name: add tcp dia ports 3868 and 13869
+      lineinfile:
+        insertbefore: "^#pace.* port"
+        path: /etc/sysconfig/ip6tables
+        line: |
+           #mb2c port
+           -A INPUT -p TCP --dport 3868 -j ACCEPT
+           -A INPUT -p TCP --dport 13869 -j ACCEPT
+
+    - name: show added line
+      shell: egrep '^mb.*rt' -A 2 /etc/sysconfig/ip6tables
+      register: result
+
+    - debug: var=result.stdout_lines

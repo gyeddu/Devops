@@ -1,0 +1,43 @@
+---
+
+- hosts: mbmsgw250
+  gather_facts: false
+
+  tasks:
+
+    - name: post spin-up health check
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      with_items:
+      - show chassis
+      - show card 1 detail
+      - show card 2 detail
+      - show card 3 detail
+      - show card 4 detail
+      - show ntp associations
+      - show system-state clock
+      - show fm alarm
+      - show memory
+
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+    - debug: var=result.results[2].stdout_lines
+    - debug: var=result.results[3].stdout_lines
+    - debug: var=result.results[4].stdout_lines
+    - debug: var=result.results[5].stdout_lines
+    - debug: var=result.results[6].stdout_lines
+    - debug: var=result.results[7].stdout_lines
+    - debug: var=result.results[8].stdout_lines
+
+#TASK [post spin-up health check] **************************************************************************************************************************************
+#ok: [107.124.224.27] => (item=show chassis)
+#ok: [107.124.224.27] => (item=show card 1 detail)
+#ok: [107.124.224.27] => (item=show card 2 detail)
+#ok: [107.124.224.27] => (item=show card 3 detail)
+#ok: [107.124.224.27] => (item=show card 4 detail)
+#ok: [107.124.224.27] => (item=show ntp associations)
+#ok: [107.124.224.27] => (item=show system-state clock)
+#ok: [107.124.224.27] => (item=show fm alarm)
+#ok: [107.124.224.27] => (item=show memory)

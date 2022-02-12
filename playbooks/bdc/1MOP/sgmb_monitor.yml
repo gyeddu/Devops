@@ -1,0 +1,31 @@
+---
+
+- hosts: mdfcp 
+  become: yes
+  gather_facts: true
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+
+    - name: Back up /opt/ericsson/bm-sc/mdf-cp-monitor/default/conf/monitor-sgmb.conf
+      copy:
+        src: /opt/ericsson/bm-sc/mdf-cp-monitor/default/conf/monitor-sgmb.conf
+        remote_src: yes
+        dest: /opt/ericsson/bm-sc/mdf-cp-monitor/default/conf/monitor-sgmb.conf.{{ansible_date_time.iso8601_basic_short}}
+        owner: mdfcp
+        group: bmsc
+        mode: '0640'
+
+    - name: set sgmb.monitor.diameter_port
+      lineinfile:
+        path: /opt/ericsson/bm-sc/mdf-cp-monitor/default/conf/monitor-sgmb.conf
+        regexp: 'sgmb.monitor.diameter_port'
+        line: sgmb.monitor.diameter_port = 3869
+
+    - name: show sgmb.monitor.diameter_port
+      shell: grep sgmb.monitor.diameter_port /opt/ericsson/bm-sc/mdf-cp-monitor/default/conf/monitor-sgmb.conf
+      register: result
+
+    - debug: var=result.stdout_lines

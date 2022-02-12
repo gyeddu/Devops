@@ -1,0 +1,80 @@
+---
+
+- hosts: mdf
+  become: yes
+  gather_facts: true
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+
+    - name: Back up /etc/nscd.conf
+      copy:
+        src: /etc/nscd.conf
+        remote_src: yes
+        dest: /etc/nscd.conf.{{ansible_date_time.iso8601_basic_short}}
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Back up /etc/nsswitch.conf
+      copy:
+        src: /etc/nsswitch.conf
+        remote_src: yes
+        dest: /etc/nsswitch.conf.{{ansible_date_time.iso8601_basic_short}}
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Back up /etc/nslcd.conf
+      copy:
+        src: /etc/nslcd.conf
+        remote_src: yes
+        dest: /etc/nslcd.conf.{{ansible_date_time.iso8601_basic_short}}
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Back up /etc/pam.d/system-auth-ac
+      copy:
+        src: /etc/pam.d/system-auth-ac
+        remote_src: yes
+        dest: /etc/pam.d/system-auth-ac.{{ansible_date_time.iso8601_basic_short}}
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Back up /etc/pam.d/sudo
+      copy:
+        src: /etc/pam.d/sudo
+        remote_src: yes
+        dest: /etc/pam.d/sudo.{{ansible_date_time.iso8601_basic_short}}
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Back up /etc/openldap/ldap.conf
+      copy:
+        src: /etc/openldap/ldap.conf
+        remote_src: yes
+        dest: /etc/openldap/ldap.conf.{{ansible_date_time.iso8601_basic_short}}
+        owner: root
+        group: root
+        mode: '0644'
+
+
+    - name: list files
+      shell: '{{ item }}'
+      register: result
+
+      loop:
+        - ls -al /etc/nscd.conf* 
+        - ls -al /etc/nsswitch.conf* 
+        - ls -al /etc/nslcd.conf* 
+        - ls -al /etc/pam.d/system-auth-ac* 
+        - ls -al /etc/pam.d/password-auth-ac* 
+        - ls -al /etc/pam.d/sudo* 
+        - ls -al /etc/openldap/ldap.conf*  
+
+    - debug: var=result.stdout_lines

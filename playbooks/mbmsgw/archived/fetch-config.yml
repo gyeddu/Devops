@@ -1,0 +1,26 @@
+---
+
+- hosts: mbmsgw250
+  gather_facts: false
+
+  tasks:
+    - name: save the configuration to a file
+      cli_command:
+        command: '{{ item }}'
+
+      with_items:
+      - config
+      - save zrdm54cfmgw01_yyyy-mm-dd.cfg
+      - exit
+
+    - name: let's wait to save and exit
+      pause:
+        seconds: 30
+
+    - name: copy the file from /flash/ to Ansible controller
+      ansible.netcommon.net_get:
+        src: /flash/zrdm54cfmgw01_yyyy-mm-dd.cfg
+
+    - name: copy the base config file from /flash/ to Ansible controller
+      ansible.netcommon.net_get:
+        src: /flash/ericsson.xml

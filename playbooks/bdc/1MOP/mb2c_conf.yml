@@ -1,0 +1,35 @@
+---
+
+- hosts: mdfcp
+  become: yes
+  gather_facts: true 
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+ 
+  tasks:
+
+    - name: Back up diameter-config-mb2c.xml
+      copy:
+        src: /opt/ericsson/bm-sc/mdf-cp/default/conf/diameter-config-mb2c.xml
+        remote_src: yes
+        dest: /opt/ericsson/bm-sc/mdf-cp/default/conf/diameter-config-mb2c.xml.{{ansible_date_time.iso8601_basic_short}}
+        owner: mdfcp
+        group: bmsc
+        mode: '0640'
+
+    - name: test
+      shell: '{{ item }}'
+
+      loop:
+        - sed -i '/DiameterUri/s/aaa:\/\/.*port=sctp/aaa:\/\/{{MB2CDiameterUri}}:13869;transport=sctp/' /opt/ericsson/bm-sc/mdf-cp/default/conf/diameter-config-mb2c.xml
+        - sed -i '/DiameterUri/s/,aaa:\/\/.*port=tcp/,aaa:\/\/{{MB2CDiameterUri}}:3868;transport=tcp/' /opt/ericsson/bm-sc/mdf-cp/default/conf/diameter-config-mb2c.xml
+        - sed -i '/OriginRealm/s/>.*</>{{MB2COriginRealm}}</' /opt/ericsson/bm-sc/mdf-cp/default/conf/diameter-config-mb2c.xml
+        - sed -i '/HostIp/s/>.*</>{{MB2CDiaHostIP}}</' /opt/ericsson/bm-sc/mdf-cp/default/conf/diameter-config-mb2c.xml
+
+
+    - name: show added line
+      shell: egrep 'DiameterUri|OriginRealm|HostIp' /opt/ericsson/bm-sc/mdf-cp/default/conf/diameter-config-mb2c.xml
+      register: result
+
+    - debug: var=result.stdout_lines

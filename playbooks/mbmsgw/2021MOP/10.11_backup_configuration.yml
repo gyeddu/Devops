@@ -1,0 +1,43 @@
+---
+
+- hosts: zrdm55afmgw01
+
+
+  vars_files:
+    - zrdm55afmgw01_enc.var
+
+  tasks:
+
+
+    - name: delete old backup
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      loop:
+        - start shell
+        - rm {{BackupFile}}
+        - exit   
+
+    - name: save backup
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      loop:
+        - config
+        - save {{BackupFile}}
+        - exit
+        - dir /flash |include zrdm5
+
+    - debug: var=result.results[3].stdout_lines
+
+    - name: copy backup to fmbt
+      net_get:
+        src: /flash/{{BackupFile}}
+        protocol: sftp
+        dest: ~/{{BackupFile}}.{{ansible_date_time.iso8601_basic_short}}.cfg
+      register: result
+
+    - debug: var=result
+     

@@ -1,0 +1,24 @@
+---
+
+- hosts: mdfcp1
+  gather_facts: false
+  become: yes
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+                          
+  tasks:
+                     
+    - name: config ldap account access
+      lineinfile:
+        path: /etc/openldap/ldap.conf.20210306-2206
+        line: |
+           # added for to allow LDAP search.  LDAP servers are using self-signed certs.
+           TLS_REQCERT allow
+
+    - name: parameters and their values
+      shell: egrep 'TLS_REQCERT allow' -B 6 /etc/openldap/ldap.conf.20210306-2206
+      register: result
+
+    - debug: var=result.stdout_lines
+

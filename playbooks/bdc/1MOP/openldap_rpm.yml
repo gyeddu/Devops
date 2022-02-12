@@ -1,0 +1,37 @@
+---
+
+  - hosts: mdf
+    gather_facts: false
+    become: yes
+
+    vars_files:
+      - zrdm52afbms01_enc.var
+
+    tasks:
+
+    - name: query installed ldap
+      shell: rpm -qa | egrep "nscd|nss-pam-ldapd|openldap"
+      register: result
+
+    - debug: var=result.stdout_lines   
+
+    - name: install and update ldap packages
+      shell: '{{ item }}'
+      register: result
+
+      loop:
+        - cd /var/tmp/BDC_CP2_install/OpenLDAP_RPMs      
+        - rpm -ivh nscd-2.17-260.el7_6.6.x86_64.rpm
+        - rpm -ivh nss-pam-ldapd-0.8.13-16.el7_6.1.x86_64.rpm
+        - rpm -U openldap-2.4.44-21.el7_6.x86_64.rpm
+        - rpm -ivh openldap-clients-2.4.44-21.el7_6.x86_64.rpm
+
+    - debug: var=result.stdout_lines
+
+    - name: query installed ldap
+      shell: rpm -qa | egrep "nscd|nss-pam-ldapd|openldap"
+      register: result
+
+    - debug: var=result.stdout_lines
+
+

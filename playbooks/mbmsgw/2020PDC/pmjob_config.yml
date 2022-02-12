@@ -1,0 +1,63 @@
+---
+
+- hosts: zrdm52afmgw01
+  gather_facts: false
+
+  vars_files:
+    - zrdm52afmgw01_enc.var
+
+  tasks:
+
+    - name:  pmjob config
+      cli_command:
+        command: '{{ item }}'
+
+      loop:
+        - config
+        - >
+          pm job mbmsgw-all
+          measurement-reader mbmsgw-all-reader1
+          group-ref board-information
+        - top
+        - >
+          pm job mbmsgw-all
+          measurement-reader mbmsgw-all-reader3
+          group-ref mbmsgw-mme
+        - top
+        - >
+          pm job mbmsgw-all
+          measurement-reader mbmsgw-all-reader4
+          group-ref session-and-payload
+        - top
+        - >
+          pm job mbmsgw-all
+          measurement-reader mbmsgw-all-reader5
+          group-ref sgmb-interface
+        - top
+        - >
+          pm job mbmsgw-all
+          measurement-reader mbmsgw-all-reader6
+          group-ref sm-interface
+        - top
+        - >
+          pm job mbmsgw-all
+          requested-job-state active
+          reporting-period    five-min
+          granularity-period  five-min
+          compression-type    gzip
+          measurement-reader mbmsgw-all-reader
+          group-ref            port
+          measurement-type-ref mcast-outpackets
+        - commit
+        - exit
+
+    - name: let's wait to commit and exit
+      pause:
+        seconds: 30
+
+    - name: pm job running-config
+      cli_command:
+        command: show running-config pm job mbmsgw-all
+      register: result
+
+    - debug: var=result.stdout_lines

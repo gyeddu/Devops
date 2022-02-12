@@ -1,0 +1,61 @@
+---
+
+- hosts: mbmsgw250
+
+  tasks:
+
+#qnit.sh created in ericsson home dir to develop the playbook, creation and changes reflected in mate
+#inventory and insertb4exit.py would need minor changes to insert iptable in /etc/init.sh owned by root
+#CIQ
+#syslog_server: 32.68.131.10, required in insertb4exit.py
+
+    - name: copy insertbefore.py form ansible home to /flash
+      net_put:
+        src: insertb4exit.py
+        protocol: sftp
+        dest: /flash/insertb4exit.py
+
+    - name:  start shell
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      with_items:
+      - start shell
+      - cat qnit.sh
+      - python3 insertb4exit.py
+      - cat qnit.sh
+      - rm insertb4exit.py
+      - exit
+        
+    - debug: var=result.results[1].stdout_lines
+    - debug: var=result.results[3].stdout_lines
+
+#TASK [debug] *****************************************************************************************************************************************************************************
+#ok: [107.124.250.27] => {
+#    "result.results[1].stdout_lines": [
+#        "# Temporary solution. There is an issue with SEG if EVR deployed",
+#        "#  with Orchestration. For details please check HX77655.",
+#        "if [ -x \"/opt/services/seg/scripts/postinstall\" ]; then",
+#        "\techo \"SEG is installed. Run postinstall for that...\"",
+#        "\t/opt/services/seg/scripts/postinstall",
+#        "\techo \"SEG postinstall has finished\"",
+#        "fi",
+#        "",
+#        "exit 0"
+#    ]
+#}
+#TASK [debug] *****************************************************************************************************************************************************************************
+#ok: [107.124.250.27] => {
+#    "result.results[3].stdout_lines": [
+#        "# Temporary solution. There is an issue with SEG if EVR deployed",
+#        "#  with Orchestration. For details please check HX77655.",
+#        "if [ -x \"/opt/services/seg/scripts/postinstall\" ]; then",
+#        "\techo \"SEG is installed. Run postinstall for that...\"",
+#        "\t/opt/services/seg/scripts/postinstall",
+#        "\techo \"SEG postinstall has finished\"",
+#        "fi",
+#        "iptables -t nat -A OUTPUT -p udp --dst 32.68.131.10 --dport 514 -j  DNAT --to-destination 32.68.131.10:1579",
+#        "",
+#        "exit 0"
+#    ]

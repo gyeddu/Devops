@@ -1,0 +1,106 @@
+---
+
+- hosts: zrdm55afmgw01
+  gather_facts: false
+
+  vars_files:
+    - zrdm55afmgw01_enc.var
+
+  tasks:
+
+    - name: contexts and interfaces creation
+      cli_command:
+        command: '{{ item }}'
+
+      loop:
+        - config
+        - contexts context m1
+        - contexts context sm
+        - contexts context sgimb
+        - contexts context sgmb
+        - commit
+
+        - interfaces interface if-m1-1@m1 type ipForward l3-interface context m1
+        - l3-interface ipv6 mtu 2000
+        - l3-interface ipv6 address addr-primary {{m1_1ip6}}
+
+        - interfaces interface if-m1-2@m1 type ipForward l3-interface context m1
+        - l3-interface ipv6 mtu 2000
+        - l3-interface ipv6 address addr-primary {{m1_2ip6}}
+
+        - interfaces interface 1/1 type ethernetCsmacd enabled true ethernet bind-interface intf-name if-m1-1@m1
+        - ethernet bind-interface intf-ctx m1
+        - ethernet mtu 2000
+
+        - interfaces interface 2/1 type ethernetCsmacd enabled true ethernet bind-interface intf-name if-m1-2@m1
+        - ethernet bind-interface intf-ctx m1
+        - ethernet mtu 2000
+
+        - top
+        - interfaces interface if-sm-1@sm type ipForward l3-interface context sm
+        - l3-interface ip mtu 2000
+        - l3-interface ip address addr-primary addr {{sm_1ip4}}
+         
+        - interfaces interface if-sm-2@sm type ipForward l3-interface context sm
+        - l3-interface ip mtu 2000
+        - l3-interface ip address addr-primary addr {{sm_2ip4}}
+         
+        - interfaces interface 3/1 type ethernetCsmacd enabled true ethernet bind-interface intf-name if-sm-1@sm
+        - ethernet bind-interface intf-ctx sm
+         
+        - interfaces interface 4/1 type ethernetCsmacd enabled true ethernet bind-interface intf-name if-sm-2@sm
+        - ethernet bind-interface intf-ctx sm
+
+        - top
+        - interfaces interface if-sgimb-1@sgimb type ipForward l3-interface context sgimb
+        - l3-interface ipv6 mtu 2000
+        - l3-interface ipv6 address addr-primary {{sgimb_1ip6}}
+         
+        - interfaces interface if-sgimb-2@sgimb type ipForward l3-interface context sgimb
+        - l3-interface ipv6 mtu 2000
+        - l3-interface ipv6 address addr-primary {{sgimb_2ip6}}
+        
+        - interfaces interface 1/2 type ethernetCsmacd enabled true ethernet bind-interface intf-name if-sgimb-1@sgimb
+        - ethernet bind-interface intf-ctx sgimb
+        - ethernet mtu 2000
+         
+        - interfaces interface 2/2 type ethernetCsmacd enabled true ethernet bind-interface intf-name if-sgimb-2@sgimb
+        - ethernet bind-interface intf-ctx sgimb
+        - ethernet mtu 2000
+
+
+        - top
+        - interfaces interface if-sgmb-1@sgmb type ipForward l3-interface context sgmb
+        - l3-interface ipv6 mtu 2000
+        - l3-interface ipv6 address addr-primary {{sgmb_1ip6}}
+         
+        - interfaces interface if-sgmb-2@sgmb type ipForward l3-interface context sgmb
+        - l3-interface ipv6 mtu 2000
+        - l3-interface ipv6 address addr-primary {{sgmb_2ip6}}
+         
+        - interfaces interface 3/2 type ethernetCsmacd enabled true ethernet bind-interface intf-name if-sgmb-1@sgmb
+        - ethernet bind-interface intf-ctx sgmb
+         
+        - interfaces interface 4/2 type ethernetCsmacd enabled true ethernet bind-interface intf-name if-sgmb-2@sgmb
+        - ethernet bind-interface intf-ctx sgmb
+
+        - top
+        - commit
+        - exit  
+
+    - name: let's wait to commit and exit
+      pause:
+        seconds: 30
+
+    - name: show contexts and interfaces 
+      cli_command:
+        command: '{{ item }}'
+      register: result  
+
+      loop:
+        - show context all
+        - show running-config interfaces interface
+
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+      

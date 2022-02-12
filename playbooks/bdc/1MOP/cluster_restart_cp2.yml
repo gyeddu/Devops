@@ -1,0 +1,4 @@
+---
+
+- include: cluster_stop_cp2.yml
+- include: cluster_start_cp2.yml

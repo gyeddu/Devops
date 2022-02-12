@@ -1,0 +1,38 @@
+---
+
+- hosts: zrdm55afmgw01
+  gather_facts: false
+
+  vars_files:
+    - zrdm55afmgw01_enc.var
+
+  tasks:
+
+    - name: pdc custom configuration
+      cli_command:
+        command: '{{ item }}'
+
+      loop:
+        - start shell
+        - echo "cli;show memory card all;meminfo.txt;epg_pdc_parse_onlylatest;" > /flash/pdc-custom.txt
+        - echo "cli;show chassis;chassis.txt;epg_pdc_parse_onlylatest;" >> /flash/pdc-custom.txt
+        - epg_pdc_control store_cust_run=/flash/pdc-custom.txt
+        - exit  
+
+    - name: wait for pdc to run
+      pause:
+        minutes: 5
+
+    - name: verify pdc is running
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      loop:
+        - start shell     
+        - epg_pdc_control runinfo
+        - exit
+
+    - debug: var=result.results[1].stdout_lines
+
+

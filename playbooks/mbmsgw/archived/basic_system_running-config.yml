@@ -1,0 +1,52 @@
+---
+
+- hosts: mbmsgw250
+  gather_facts: false
+
+  tasks:
+
+    - name: post spin-up basic running-config check
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      with_items:
+      - show running-config system hostname
+      - show running-config system timeout
+      - show running-config contexts service
+      - show running-config contexts banner login
+      - show running-config system ntp
+      - show ntp associations
+      - show running-config contexts context local service
+      - show running-config contexts snmp
+      - show running-config contexts context local logging
+      - show running-config contexts service
+      - show running-config asp
+      - show asp
+
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+    - debug: var=result.results[2].stdout_lines
+    - debug: var=result.results[3].stdout_lines
+    - debug: var=result.results[4].stdout_lines
+    - debug: var=result.results[5].stdout_lines
+    - debug: var=result.results[6].stdout_lines
+    - debug: var=result.results[7].stdout_lines
+    - debug: var=result.results[8].stdout_lines
+    - debug: var=result.results[9].stdout_lines
+    - debug: var=result.results[10].stdout_lines
+    - debug: var=result.results[11].stdout_lines
+
+#TASK [post spin-up basic running-config check] ************************************************************************************************************************
+#ok: [107.124.224.27] => (item=show running-config system hostname)
+#ok: [107.124.224.27] => (item=show running-config system timeout)
+#ok: [107.124.224.27] => (item=show running-config contexts service)
+#ok: [107.124.224.27] => (item=show running-config contexts banner login)
+#ok: [107.124.224.27] => (item=show running-config system ntp)
+#ok: [107.124.224.27] => (item=show ntp associations)
+#ok: [107.124.224.27] => (item=show running-config contexts context local service)
+#ok: [107.124.224.27] => (item=show running-config contexts snmp)
+#ok: [107.124.224.27] => (item=show running-config contexts context local logging)
+#ok: [107.124.224.27] => (item=show running-config contexts service)
+#ok: [107.124.224.27] => (item=show running-config asp)
+#ok: [107.124.224.27] => (item=show asp)

@@ -1,0 +1,43 @@
+---
+
+- hosts: mdfcp1
+  gather_facts: false
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+    - name: Please wait, BDC cluster health being checked ...
+      become: yes
+      shell:
+        cmd: |
+          export PATH=$PATH:/usr/sbin
+          echo '*********Master/Active VMs*********'
+          pcs status | grep Masters |awk '{print $3}'
+          pcs status | grep pAppRes |awk '{print $4}'
+          echo '*********Clone VMs Started*********'
+          pcs status | grep Started: |awk '{print $3,$4}'
+          echo '*********Resources Started*********'
+          pcs status | egrep 'Started z|Starting z'|awk '{print $1 " @ " $4}'
+          echo '*********Resources Stopped*********'
+          pcs status | egrep 'Stopped z|Stopping z'|awk '{print $1 " @ " $4}'
+          echo '*********Daemon Status*************'
+          pcs status | egrep 'corosync:|pacemaker|pcsd'
+      register: result1
+
+    - debug: var=result1.stdout_lines
+
+    - name: Failed Actions 
+      become: yes
+      shell:
+        cmd: |
+          export PATH=$PATH:/usr/sbin
+          pcs status | grep 'not running'
+      register: result1
+      ignore_errors: true
+
+    - debug: var=result1.stdout_lines
+
+
+
+

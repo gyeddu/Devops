@@ -1,0 +1,23 @@
+---
+
+- hosts: mdf
+  become: yes
+  gather_facts: false
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+
+    - name: enable snmpd, restart ipatables and esad
+      shell: '{{ item }}'
+
+      loop:
+        - systemctl enable snmpd
+        - systemctl start snmpd
+        - systemctl restart iptables
+        - service esad restart
+
+    - shell: iptables -v -n -L | grep 58161
+      register: result
+    - debug: var=result.stdout_lines

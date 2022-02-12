@@ -1,0 +1,188 @@
+---
+
+- hosts: zrdm52afmgw01
+  gather_facts: false
+
+  vars_files:
+    - zrdm52afmgw01_enc.var
+
+  tasks:
+
+    - name: hostname and system timeout
+      cli_command:
+        command: '{{ item }}'
+
+      loop:
+        - config
+        - system hostname {{NodeName}}
+        - system timeout session idle 99999
+        - contexts service multiple-contexts true
+        - commit
+        - exit
+
+    - name: let's wait to commit and exit
+      pause:
+        seconds: 30
+
+    - name: show hostname and system timeout
+      cli_command:
+        command: '{{ item }}'
+      register: result
+      loop:
+        - show running-config system hostname
+        - show running-config system timeout
+        - show running-config contexts service
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+    - debug: var=result.results[2].stdout_lines
+
+    - name: ntp server
+      cli_command:
+        command: '{{ item }}'
+      loop:
+        - config
+        - system ntp server {{NTPServer1}}
+        - udp address {{NTPServer1}}
+        - association-type server
+        - version          3
+        - context          local
+        - system ntp server {{NTPServer2}}
+        - udp address {{NTPServer2}}
+        - association-type server
+        - version          3
+        - context          local
+        - system ntp server {{NTPServer3}}
+        - udp address {{NTPServer3}}
+        - association-type server
+        - version          3
+        - context          local
+        - commit
+        - exit
+
+    - name: let's wait to commit and exit
+      pause:
+        seconds: 30
+
+    - name: show ntp server
+      cli_command:
+        command: '{{ item }}'
+      register: result
+      loop:
+        - show running-config system ntp
+        - show ntp associations
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+
+    - name: snmp server
+      cli_command:
+        command: '{{ item }}'
+      loop:
+        - config
+        - contexts context local
+        - service snmp-server
+        - contexts snmp server enterprise ericsson
+        - contexts snmp view Inet_View internet restriction included
+        - contexts snmp view all internet restriction included
+        - commit
+        - exit
+
+    - name: let's wait to commit and exit
+      pause:
+        seconds: 30
+
+    - name: snmp server cont'd
+      cli_command:
+        command: '{{ item }}'
+      loop:
+        - config
+        - contexts snmp target {{SNMP_Target_Name}} transport ip {{SNMP_Target_IP}}
+        - transport security-params security-name community-string community-string {{SNMP_Community}}
+        - transport security-params security-name community-string version v2c
+        - transport security-params view all
+        - contexts snmp community {{SNMP_Community}} all-contexts view all access read-write 
+        - commit
+        - exit
+
+    - name: let's wait to commit and exit
+      pause:
+        seconds: 30
+
+    - name: show snmp server
+      cli_command:
+        command: '{{ item }}'
+      register: result
+      loop:
+        - show running-config contexts context local service
+        - show running-config contexts snmp
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+
+    - name: syslog server
+      cli_command:
+        command: '{{ item }}'
+      with_items:
+      - config
+      - contexts context local
+      - logging syslog {{MBMSGW_OAM_IP}}
+      - commit
+      - exit
+
+    - name: let's wait to commit and exit
+      pause:
+        seconds: 30
+
+    - name: show syslog server
+      cli_command:
+        command: show running-config contexts context local logging
+      register: result
+    - debug: var=result.stdout_lines
+
+    - name: advanced services processor (asp)
+      cli_command:
+        command: '{{ item }}'
+      loop:
+        - config
+        - asp default_asp_attr management/1
+        - shutdown false
+        - asp default_asp_attr 1/1
+        - shutdown false
+        - asp default_asp_attr 2/1
+        - shutdown false
+        - asp default_asp_attr 3/1
+        - shutdown false
+        - asp default_asp_attr 4/1
+        - shutdown false
+        - commit
+        - exit
+
+    - name: let's wait to commit and exit
+      pause:
+        seconds: 30
+
+    - name: advanced services processor (asp)
+      cli_command:
+        command: '{{ item }}'
+      loop:
+        - config
+        - asp pool epgpool service epg
+        - asp management/1
+        - asp 1/1
+        - asp 2/1
+        - asp 3/1
+        - asp 4/1
+        - commit
+        - exit
+
+    - name: let's wait to commit and exit
+      pause:
+        seconds: 30
+
+    - name: show asp
+      cli_command:
+        command: '{{ item }}'
+      register: result
+      loop:
+        - show running-config asp
+        - show asp
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines

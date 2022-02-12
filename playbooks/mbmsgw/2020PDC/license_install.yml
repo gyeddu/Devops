@@ -1,0 +1,112 @@
+---
+
+- hosts: zrdm52afmgw01
+  gather_facts: false
+
+  vars_files:
+    - zrdm52afmgw01_enc.var
+
+  tasks:
+
+    - name: enable traffic capture featue
+      cli_command:
+        command: '{{ item }}'
+
+      loop:
+        - config
+        - epg node feature-activation integrated-traffic-capture
+        - commit
+        - exit
+
+    - name: let's wait to commit and exit
+      pause:
+        seconds: 30
+
+    - name: copy license file form ansible home to MBMS GW
+      net_put:
+        src: '{{LicenseFile}}'
+        protocol: scp
+        dest: /flash/{{LicenseFile}}
+
+    - name: copy license file form ansible home to MBMS GW
+      net_put:
+        src: '{{LicenseFile_1}}'
+        protocol: scp
+        dest: /flash/{{LicenseFile_1}}
+
+    - name: list license files
+      find:
+        paths: /flash
+        patterns: '{{LicenseFile}}'
+
+    - name: check alarms
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      loop:
+        - show fm alarm
+        - show lm state
+
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+
+    - name: install the IPOS LKF
+      cli_command:
+        command: '{{ item }}'
+
+      loop:
+        - lm key-file-management install-key-file uri file:///flash/{{LicenseFile_1}} password nopass
+        - lm publish-license-inventory
+        - lm refresh-license-inventory
+
+    - name: confirm IPOS LKF
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      loop:
+      - show lm key-file-management report-progress
+      - show lm last-license-inventory-refresh
+
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+
+
+    - name: install the application LKF
+      cli_command:
+        command: '{{ item }}'
+
+      loop:
+        - lm key-file-management install-key-file uri file:///flash/{{LicenseFile}} password nopass
+        - lm publish-license-inventory
+        - lm refresh-license-inventory
+
+    - name: confirm IPOS LKF
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      loop:
+        - show lm key-file-management report-progress
+        - show lm last-license-inventory-refresh
+
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+
+    - name: remove license files
+      file:
+        path: /flash/{{LicenseFile}}
+        state: absent
+
+    - name: remove license files
+      file:
+        path: /flash/{{LicenseFile_1}}
+        state: absent
+
+    - name: verify the status
+      cli_command:
+        command: show lm feature-key
+      register: result
+
+    - debug: var=result.stdout_lines

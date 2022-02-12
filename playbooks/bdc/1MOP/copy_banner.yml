@@ -1,0 +1,17 @@
+---
+
+  - hosts: mdf
+    gather_facts: false
+    become: yes
+
+    vars_files: 
+      - zrdm52afbms01_enc.var
+
+    tasks:
+    - name: Copy file with owner and permissions
+      copy:
+        src: /home/qh378r/issue_att.net
+        dest: /etc/issue_att.net
+        owner: root
+        group: root
+        mode: '0644'

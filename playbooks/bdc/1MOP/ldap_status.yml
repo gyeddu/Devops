@@ -1,0 +1,29 @@
+---
+
+- hosts: mdf
+  gather_facts: false
+  become: yes
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+    - shell: |
+          ldapsearch -s sub -x -H ldaps://{{LDAP_Serv1}} -D "{{binddn}}" -b {{searchbase}} -w {{LDAP_Password}} -LLL '(objectclass=*)' '*'
+      register: result
+    - debug: var=result.stdout_lines
+
+    - shell: |
+          ldapsearch -s sub -x -H ldaps://{{LDAP_Serv2}} -D "{{binddn}}" -b {{searchbase}} -w {{LDAP_Password}} -LLL '(objectclass=*)' '*'
+      register: result
+    - debug: var=result.stdout_lines
+
+    - shell: |
+          getent group
+      register: result
+    - debug: var=result.stdout_lines
+
+    - shell: |
+          getent passwd   
+      register: result
+    - debug: var=result.stdout_lines

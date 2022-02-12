@@ -1,0 +1,26 @@
+---
+
+- hosts: mbms250
+  gather_facts: false
+
+  tasks:
+    - name: copy test.yml form ansible home to MBMS GW
+      net_put:
+        src: test.yml
+        protocol: sftp
+        dest: /flash/test.yml
+
+    - name: list file
+      find:
+        paths: /flash
+        patterns: test.*
+
+    - name: remove file
+      file:
+        path: /flash/test.yml
+        state: absent
+
+    - name: list file
+      find:
+        path: /flash
+        patterns: test.*

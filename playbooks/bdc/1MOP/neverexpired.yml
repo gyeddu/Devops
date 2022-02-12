@@ -1,0 +1,16 @@
+---
+
+  - hosts: mdf 
+
+    vars_files:
+      - zrdm52afbms01_enc.var
+
+    tasks:
+    - shell: 
+        cmd: |
+          chage -m 0 -M 99999 -I -1 -E -1 admin    
+          chage -l admin
+      register: result1
+
+    - debug: var=result1.stdout_lines
+

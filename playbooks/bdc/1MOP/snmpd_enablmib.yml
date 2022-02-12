@@ -1,0 +1,36 @@
+---
+
+- hosts: mdf
+  become: yes
+  gather_facts: true
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+
+    - name: Back up proxyCfg.xml
+      copy:
+        src: /usr/local/esa/conf/proxyCfg.xml
+        remote_src: yes
+        dest: /usr/local/esa/conf/proxyCfg.xml.{{ansible_date_time.iso8601_basic_short}}
+        owner: root
+        group: root
+        mode: '0600'
+
+    - shell: ls -al /usr/local/esa/conf/proxyCfg.xml*
+      register: result
+    - debug: var=result.stdout_lines
+
+    - name: enable snmpd mibs
+      shell: '{{ item }}'
+
+      loop:
+        - sed -i '/<!-- mib-2, rmon -->/{n;s/no/yes/}' /usr/local/esa/conf/proxyCfg.xml
+        - sed -i '/<!-- mib-2, host -->/{n;s/no/yes/}' /usr/local/esa/conf/proxyCfg.xml
+        - sed -i '/<!-- mib-2, host -->/,/<port>7161<\/port>/s/7161/58161/' /usr/local/esa/conf/proxyCfg.xml
+        - sed -i '/<!-- mib-2, host -->/,/<securityName>private<\/securityName>/s/private/redhat/' /usr/local/esa/conf/proxyCfg.xml
+
+    - shell: cat /usr/local/esa/conf/proxyCfg.xml
+      register: result
+    - debug: var=result.stdout_lines

@@ -1,0 +1,12 @@
+---
+- name: get system uptime and Ansible version on local server
+  hosts: all
+  gather_facts: no
+
+  tasks:
+
+  - name: uptime cmd
+    command: uptime
+
+  - name: check Ansible version
+    command: ansible --version

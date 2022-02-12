@@ -1,0 +1,54 @@
+---
+
+- hosts: mbmsgw250
+  gather_facts: false
+
+  tasks:
+
+#CIQ
+#Timeout: 30
+#Max-Retries: 5
+#Deadtime: 10
+#Servers-IP: 135.21.14.126
+#Servers-Port: 49249
+#Servers-key: eMBM5L@B
+#Servers-IP: 135.21.14.126
+#Servers-Port: 49249
+#Servers-key: eMBM5L@B
+
+    - name: tacacs config
+      cli_command:
+        command: '{{ item }}'
+
+      with_items:
+      - config
+      - system authentication user-authentication-order [ local-users tacacsplus ]
+      - interfaces interface mgmt@local
+      - l3-interface ip source-address options tacacs-plus
+      - system tacacsplus timeout 30
+      - system tacacsplus max-retries 5
+      - system tacacsplus deadtime 10
+      - system tacacsplus server 135.21.14.126 49249
+      - key eMBM5L@B
+      - system tacacsplus server 135.21.14.127 49249
+      - key eMBM5L@B
+      - commit
+      - exit
+
+    - name: let's wait to commit and exit
+      pause:
+        seconds: 30
+
+    - name:  tacacs running-config
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      with_items:
+      - show running-config system authentication user-authentication-order
+      - show running-config interfaces interface mgmt@local|include tacacs
+      - show running-config system tacacsplus
+
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+    - debug: var=result.results[2].stdout_lines

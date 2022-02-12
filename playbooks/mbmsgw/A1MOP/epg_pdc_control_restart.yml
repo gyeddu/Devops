@@ -1,0 +1,45 @@
+---
+
+- hosts: zrdm55afmgw01
+  gather_facts: false
+
+  vars_files:
+    - zrdm55afmgw01_enc.var
+
+  tasks:
+
+    - name: pdc custom configuration
+      cli_command:
+        command: '{{ item }}'
+
+      loop:
+        - start shell
+        - epg_pdc_control stop
+        - epg_pdc_control start
+        - exit
+
+    - name: wait for pdc to run
+      pause:
+        minutes: 5
+
+    - name: verify pdc is running
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      loop:
+        - start shell
+        - epg_pdc_control status
+        - epg_pdc_control runinfo
+        - exit
+
+    - debug:
+        msg:
+          - '#{{result.results[1].item}}'
+          - '{{result.results[1].stdout_lines}}'
+
+    - debug:
+        msg:
+          - '#{{result.results[2].item}}'
+          - '{{result.results[2].stdout_lines}}'
+

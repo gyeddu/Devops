@@ -1,0 +1,28 @@
+---
+
+- hosts: mdf 
+  gather_facts: false
+  become: yes
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+
+      - name: set paranoia
+        lineinfile:
+          path: /etc/nscd.conf
+          regexp: '^\s+paranoia\s+no'
+          line: \t paranoia                yes
+
+      - name: set restart-interval
+        lineinfile:
+          path: /etc/nscd.conf
+          regexp: '^#\s+re.*val\s+3600'
+          line: \t restart-interval        3600
+
+      - name: parameters and their values
+        shell: egrep "^#?\s+paranoia\s|^#?\s+re.*val\s+3600" /etc/nscd.conf
+        register: result
+
+      - debug: var=result.stdout_lines

@@ -1,0 +1,36 @@
+---
+
+  - hosts: mdf
+    gather_facts: false
+    become: yes
+
+    vars_files:
+      - zrdm52afbms01_enc.var
+
+    tasks:
+    - name: Create the bin directory that the Python script will be copied to
+      file:
+        path: /home/admin/bin
+        state: directory
+        owner: admin
+        group: admin
+        mode: '0755'
+
+    - name: copy the bdc_mockup.py script into the bin directory 
+      copy:
+        src: /var/tmp/BDC_CP2_install/PythonScripts/bdc_mockup.py
+        remote_src: yes
+        dest: /home/admin/bin
+        owner: admin
+        group: admin
+        mode: '0755'
+
+    - cron:
+        name: .  The Python script will be run every day at midnight
+        minute: 0
+        hour: 0
+        job: /home/admin/bin/bdc_mockup.py
+
+    - shell: crontab -l
+      register: result
+    - debug: var=result.stdout_lines

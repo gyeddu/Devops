@@ -1,0 +1,35 @@
+---
+
+- hosts: mdfcp1
+  become: yes
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+
+    - name: Back up usmCfg.xml
+      copy:
+        src: /usr/local/esa/conf/usmCfg.xml
+        remote_src: yes
+        dest: /usr/local/esa/conf/usmCfg.xml.{{ansible_date_time.iso8601_basic_short}}
+        owner: root
+        group: root
+        mode: '0600'
+
+    - shell: ls -al /usr/local/esa/conf/usmCfg.xml*
+      register: result
+    - debug: var=result.stdout_lines
+
+    - name: add a usmUser entry
+      lineinfile:
+        insertafter: "</usmUser>"
+        path: /usr/local/esa/conf/usmCfg.xml
+        line: >
+          <usmUser active="yes">
+              <securityName>v1v2NoAuthNoPrivSecName</securityName>
+          </usmUser>
+
+    - shell: cat /home/qh378r/usmCfg.xml
+      register: result
+    - debug: var=result.stdout_lines

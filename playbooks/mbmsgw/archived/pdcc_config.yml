@@ -1,0 +1,22 @@
+---
+
+- hosts: mbmsgw250
+  gather_facts: false
+
+  tasks:
+
+    - name: restore from the file
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      with_items:
+      - start shell
+      - epg_pdc_control runinfo
+      - echo "cli;show memory card all;meminfo.txt;epg_pdc_parse_onlylatest;" > /flash/pdq-custom.txt
+      - echo "cli;show chassis;chassis.txt;epg_pdc_parse_onlylatest;" >> /flash/pdc-custom.txt
+      - epg_pdc_control store_cust_run=/flash/pdc-custom.txt
+      - epg_pdc_control runinfo
+
+    - debug: var=result.results[1].stdout_lines
+    - debug: var=result.results[5].stdout_lines

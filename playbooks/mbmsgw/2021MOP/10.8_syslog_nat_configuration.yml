@@ -1,0 +1,29 @@
+---
+
+- hosts: mbmsgw250
+  gather_facts: no
+
+
+  tasks:
+    - name: copy addlines.py form ansible home to /flash
+      net_put:
+        src: addlines.py
+        protocol: sftp
+        dest: /flash/addlines.py
+
+    - name:  start shell
+#      become_user: root
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      loop:
+        - start shell
+        - cat qyslog-ng.conf
+        - python3 addlines.py
+        - cat qyslog-ng.conf
+        - rm addlines.py
+        - exit
+    - debug: var=result.results[1].stdout_lines
+    - debug: var=result.results[3].stdout_lines
+

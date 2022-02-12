@@ -1,0 +1,34 @@
+---
+
+- hosts: mdf
+  become: yes
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+
+    - name: Back up iptables
+      copy:
+        src: /etc/sysconfig/iptables
+        remote_src: yes
+        dest: /etc/sysconfig/iptables.{{ansible_date_time.iso8601_basic_short}}
+        owner: root
+        group: root
+        mode: '0644'
+
+    - shell: ls -al /etc/sysconfig/iptables*
+      register: result
+    - debug: var=result.stdout_lines
+
+    - name: allow rule for SNMP
+      blockinfile:
+        insertbefore: "COMMIT"
+        path: /etc/sysconfig/iptables
+        block: |
+          # allow rule for SNMP
+          -A INPUT -p udp --dport 58161 -m state --state NEW -j ACCEPT
+
+    - shell: grep 58161 /etc/sysconfig/iptables -A 2 -B 2
+      register: result
+    - debug: var=result.stdout_lines

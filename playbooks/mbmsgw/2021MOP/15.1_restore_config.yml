@@ -1,0 +1,34 @@
+---
+
+- hosts: zrdm55afmgw01
+  gather_facts: false
+
+  vars:
+    ansible_command_timeout: 60
+
+  vars_files:
+    - zrdm55afmgw01_enc.var
+
+  tasks:
+    - name: copy backed up file from ansible to MBMS GW
+      net_put:
+        src: zrdm55afmgw01.20210614T222542.cfg
+        protocol: sftp
+        dest: /flash/zrdm55afmgw01.20210614T222542.cfg
+
+    - name: list file
+      find:
+        paths: /flash
+        patterns: zrdm55afmgw01*.cfg
+
+    - name: restore from the file
+      cli_command:
+        command: '{{ item }}'
+
+      with_items:
+              
+        - config
+        - load replace zrdm55afmgw01.20210614T222542.cfg
+        - commit
+        - exit 
+        

@@ -1,0 +1,39 @@
+---
+
+- hosts: mdfcp
+  become: yes
+  gather_facts: true
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+
+    - name: Back up mdf-cp-config.xml
+      copy:
+        src: /opt/ericsson/bm-sc/mdf-cp/default/conf/mdf-cp-config.xml
+        remote_src: yes
+        dest: /opt/ericsson/bm-sc/mdf-cp/default/conf/mdf-cp-config.xml.{{ansible_date_time.iso8601_basic_short}}
+        owner: mdfcp
+        group: bmsc
+        mode: '0644'
+
+    - name: Update main config
+      shell: '{{ item }}'
+
+      loop:
+        - sed -i '/MinNa/s/>.*</>F00000</' /opt/ericsson/bm-sc/mdf-cp/default/conf/mdf-cp-config.xml
+        - sed -i '/MaxNa/s/>.*</>FFFFFF</' /opt/ericsson/bm-sc/mdf-cp/default/conf/mdf-cp-config.xml
+        - sed -i '/MinReg/s/>.*</>E00000</' /opt/ericsson/bm-sc/mdf-cp/default/conf/mdf-cp-config.xml
+        - sed -i '/MaxReg/s/>.*</>EFFFFF</' /opt/ericsson/bm-sc/mdf-cp/default/conf/mdf-cp-config.xml
+        - sed -i '/MinLoc/s/>.*</>700000</' /opt/ericsson/bm-sc/mdf-cp/default/conf/mdf-cp-config.xml
+        - sed -i '/MaxLoc/s/>.*</>8FFFFF</' /opt/ericsson/bm-sc/mdf-cp/default/conf/mdf-cp-config.xml
+        - sed -i '/Mcc/s/>.*</>312</' /opt/ericsson/bm-sc/mdf-cp/default/conf/mdf-cp-config.xml
+        - sed -i '/Mnc/s/>.*</>670</' /opt/ericsson/bm-sc/mdf-cp/default/conf/mdf-cp-config.xml
+
+
+    - name: show added line
+      shell: egrep 'MinNa|MaxNa|MinReg|MaxReg|MinLoc|MaxLoc|Mcc|Mnc' /opt/ericsson/bm-sc/mdf-cp/default/conf/mdf-cp-config.xml
+      register: result
+
+    - debug: var=result.stdout_lines

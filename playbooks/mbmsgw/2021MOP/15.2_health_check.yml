@@ -1,0 +1,47 @@
+---
+
+- hosts: zrdm55afmgw01
+
+
+  vars_files:
+    - zrdm55afmgw01_enc.var
+
+  tasks:
+
+    - name: health check 
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      loop:
+        - show card
+        - show port
+        - show bindings
+        - show fm alarm
+        - show circuit counters
+        - show system status
+        - show context all
+        - show ip route  | nomore ; show ipv6 route| nomore
+        - show bfd session all-context
+        - show bfd session ipv6 all-context
+        - show bgp neighbor summary all-contexts
+        - epg node diameter diameter-application-system embms status
+        - epg mbmsgw interface sm peer-status
+        - show asp
+        - epg node status  
+
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+    - debug: var=result.results[2].stdout_lines
+    - debug: var=result.results[3].stdout_lines
+    - debug: var=result.results[4].stdout_lines
+    - debug: var=result.results[5].stdout_lines
+    - debug: var=result.results[6].stdout_lines
+    - debug: var=result.results[7].stdout_lines
+    - debug: var=result.results[8].stdout_lines
+    - debug: var=result.results[9].stdout_lines
+    - debug: var=result.results[10].stdout_lines
+    - debug: var=result.results[11].stdout_lines
+    - debug: var=result.results[12].stdout_lines
+    - debug: var=result.results[13].stdout_lines
+    - debug: var=result.results[14].stdout_lines

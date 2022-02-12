@@ -1,0 +1,14 @@
+---
+
+- hosts: mdf
+  gather_facts: false
+  become: yes
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+     - name: restart service rsyslog
+       service:
+         name: rsyslog
+         state: restarted

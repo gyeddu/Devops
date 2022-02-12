@@ -1,0 +1,38 @@
+---
+
+- hosts: mdfcp1 
+  become: yes
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+
+    - name: Back up trapDestCfg.xml
+      copy:
+        src: /usr/local/esa/conf/trapDestCfg.xml
+        remote_src: yes
+        dest: /usr/local/esa/conf/trapDestCfg.xml.{{ansible_date_time.iso8601_basic_short}}
+        owner: root
+        group: root
+        mode: '0600'
+
+    - shell: ls -al /usr/local/esa/conf/trapDestCfg.xml*
+      register: result
+    - debug: var=result.stdout_lines
+
+    - name: add a trap destination
+      lineinfile:
+        insertafter: "</managerDefinition>"
+        path: /usr/local/esa/conf/trapDestCfg.xml
+        line: >
+             <managerDefinition snmpVersion="v2c" active="yes">
+               <ip>32.68.131.9</ip>
+               <port>162</port>
+               <securityName>v1v2ReadWriteSecName</securityName>
+               <securityLevel>noAuthNoPriv</securityLevel>
+             </managerDefinition>
+
+    - shell: cat /home/qh378r/trapDestCfg.xml
+      register: result
+    - debug: var=result.stdout_lines

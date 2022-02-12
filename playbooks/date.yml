@@ -1,0 +1,9 @@
+---
+- name: get system uptime and Ansible version on local server
+  hosts: bdc
+  gather_facts: no
+
+  tasks:
+
+  - name: uptime cmd
+    shell: date;uptime

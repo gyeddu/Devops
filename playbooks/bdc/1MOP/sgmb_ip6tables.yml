@@ -1,0 +1,34 @@
+---
+
+- hosts: mdfcp
+  become: yes
+  gather_facts: true
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+
+    - name: Back up /etc/sysconfig/ip6tables
+      copy:
+        src: /etc/sysconfig/ip6tables
+        remote_src: yes
+        dest: /etc/sysconfig/ip6tables.{{ansible_date_time.iso8601_basic_short}}
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: add tcp dia port 3869
+      lineinfile:
+        insertbefore: "^#pace.*port"
+        path: /etc/sysconfig/ip6tables
+        line: |
+           #sgmb port
+           -A INPUT -p TCP --dport 3869 -j ACCEPT
+
+    - name: show added line
+      shell: egrep '^sgm.*rt' -A 1 /etc/sysconfig/ip6tables
+      register: result
+
+    - debug: var=result.stdout_lines
+

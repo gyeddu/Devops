@@ -1,0 +1,38 @@
+---
+
+- hosts: mdfcp 
+  become: yes
+  gather_facts: true
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+
+    - name: Back up monitor-mb2c.conf
+      copy:
+        src: /opt/ericsson/bm-sc/mdf-cp-monitor/default/conf/monitor-mb2c.conf
+        remote_src: yes
+        dest: /opt/ericsson/bm-sc/mdf-cp-monitor/default/conf/monitor-mb2c.conf.{{ansible_date_time.iso8601_basic_short}}
+        owner: mdfcp
+        group: bmsc
+        mode: '0640'
+
+    - name: set mb2c.monitor.tcp
+      lineinfile:
+        path: /opt/ericsson/bm-sc/mdf-cp-monitor/default/conf/monitor-mb2c.conf
+        regexp: 'mb2c.monitor.tcp'
+        line: mb2c.monitor.tcp = 3868
+
+    - name: set mb2c.monitor.sctp
+      lineinfile:
+        path: /opt/ericsson/bm-sc/mdf-cp-monitor/default/conf/monitor-mb2c.conf
+        regexp: 'mb2c.monitor.sctp'
+        line: mb2c.monitor.sctp = 13869
+
+    - name: show sgmb.monitor.diameter_port
+      shell: egrep 'mb2c.monitor.tcp|mb2c.monitor.sctp' /opt/ericsson/bm-sc/mdf-cp-monitor/default/conf/monitor-mb2c.conf
+      register: result
+
+    - debug: var=result.stdout_lines
+

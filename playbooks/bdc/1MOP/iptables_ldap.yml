@@ -1,0 +1,26 @@
+---
+
+- hosts: mdf
+  gather_facts: false
+  become: yes
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+
+    - name: Update iptables for ldap
+      lineinfile:
+        insertbefore: "COMMIT"
+        path: /etc/sysconfig/iptables
+        regex: 
+        line: |
+           #For ATT LDAP access
+           -A INPUT -p tcp --dport 389 -m state --state NEW -j ACCEPT
+           -A INPUT -p tcp --dport 636 -m state --state NEW -j ACCEPT
+
+    - name: show added lines
+      shell: egrep '^#F.*ess' -A 2 /etc/sysconfig/iptables
+      register: result
+
+    - debug: var=result.stdout_lines

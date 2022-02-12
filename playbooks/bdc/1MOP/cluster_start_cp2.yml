@@ -1,0 +1,20 @@
+- hosts: mdfcp2
+  gather_facts: false
+  become: yes
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+    - name: starting pcs cluster
+      shell:
+        cmd: |
+          export PATH=$PATH:/usr/sbin
+          pcs status
+          pcs cluster start
+
+    - pause:
+        seconds: 60
+
+- include: bdc_ha.yml
+

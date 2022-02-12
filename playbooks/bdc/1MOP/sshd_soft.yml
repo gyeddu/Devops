@@ -1,0 +1,39 @@
+---
+
+- hosts: mdf
+  gather_facts: true
+  become: yes
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+
+    - name: Back up sshd_config
+      copy:
+        src: /etc/ssh/sshd_config
+        remote_src: yes
+        dest: /etc/ssh/sshd_config.{{ansible_date_time.iso8601_basic_short}}
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: check AllowGroups
+      shell: egrep '^A.*a.*login' /etc/ssh/sshd_config
+      register: result
+
+    - debug: var=result.stdout_lines
+
+    - name: edit AllowGroups
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^A.*a.*login'
+        line: AllowGroups admin remotelogin system-admin system-read-only cloud-user
+
+    - name: check AllowGroups
+      shell: egrep '^A.*a.*login' /etc/ssh/sshd_config
+      register: result
+
+    - debug: var=result.stdout_lines
+
+    - shell: ln -s /bin/bash /bin/ksh

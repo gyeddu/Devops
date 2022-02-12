@@ -1,0 +1,73 @@
+---
+
+- hosts: os
+  gather_facts: no
+
+  tasks:
+    - name: collecting RDM54c stack info
+      shell: . ~/FNCORE-30052-D-MC-RDM54c-openrc.sh;openstack stack list|grep RDM54c|awk '{print $4}'
+      register: result1
+
+    - name: gathering vlans
+      shell: . ~/FNCORE-30052-D-MC-RDM54c-openrc.sh;openstack stack show {{ item }}|grep 'vlan:'|grep -o '[0-9]*'
+      register: result2
+      with_items: "{{ result1.stdout_lines }}"
+
+    - name: RDM54c stacks and vlans
+      debug:
+        msg: "{{ result2.results[item].item }}: {{ result2.results[item].stdout }}"
+      loop: "{{ range(0, 54 | int) | list }}"
+
+#Here are few amongst 54
+#TASK [RDM54c stacks and vlans] ************************************************************************************************************************************************************
+#ok: [zrdm6bmobt01cli001.wnsnet.rdm6b.tci.att.com] => (item=0) => {
+#    "msg": "FNCORE-30052-D-MC-RDM54c_cor_heartbeat_net_1: 640"
+#}
+#ok: [zrdm6bmobt01cli001.wnsnet.rdm6b.tci.att.com] => (item=1) => {
+#    "msg": "FNCORE-30052-D-MC-RDM54c_gn_protect_net_2: 133"
+#}
+#ok: [zrdm6bmobt01cli001.wnsnet.rdm6b.tci.att.com] => (item=2) => {
+#    "msg": "FNCORE-30052-D-MC-RDM54c_gn_protect_net_1: 133"
+#}
+#ok: [zrdm6bmobt01cli001.wnsnet.rdm6b.tci.att.com] => (item=3) => {
+#    "msg": "FNCORE-30052-D-MC-RDM54c_VLAN_ID_0_RIGHT: 0"
+#}
+#ok: [zrdm6bmobt01cli001.wnsnet.rdm6b.tci.att.com] => (item=4) => {
+#    "msg": "FNCORE-30052-D-MC-RDM54c_VLAN_ID_0_LEFT: 0"
+#}
+#ok: [zrdm6bmobt01cli001.wnsnet.rdm6b.tci.att.com] => (item=5) => {
+#    "msg": "FNCORE-30052-D-MC-RDM54c_int_gn_pktinternal_net_1: 174"
+#}
+#ok: [zrdm6bmobt01cli001.wnsnet.rdm6b.tci.att.com] => (item=6) => {
+#    "msg": "FNCORE-30052-D-MC-RDM54c_int_sgi_pktinternal_net_2: 173"
+#}
+#ok: [zrdm6bmobt01cli001.wnsnet.rdm6b.tci.att.com] => (item=7) => {
+#    "msg": "FNCORE-30052-D-MC-RDM54c_vprobes_ext_pkt_net_1: 153"
+#}
+#ok: [zrdm6bmobt01cli001.wnsnet.rdm6b.tci.att.com] => (item=8) => {
+#    "msg": "FNCORE-30052-D-MC-RDM54c_vprobes_int_mgmt_net_1: 152"
+#}
+#ok: [zrdm6bmobt01cli001.wnsnet.rdm6b.tci.att.com] => (item=9) => {
+#    "msg": "FNCORE-30052-D-MC-RDM54c_vprobes_cdr_direct_net_2: 151"
+#}
+#ok: [zrdm6bmobt01cli001.wnsnet.rdm6b.tci.att.com] => (item=10) => {
+#    "msg": "FNCORE-30052-D-MC-RDM54c_vprobes_cdr_direct_net_1: 151"
+#}
+#ok: [zrdm6bmobt01cli001.wnsnet.rdm6b.tci.att.com] => (item=11) => {
+#    "msg": "FNCORE-30052-D-MC-RDM54c_int_pktmirror_net_2: 188"
+#}
+#ok: [zrdm6bmobt01cli001.wnsnet.rdm6b.tci.att.com] => (item=12) => {
+#    "msg": "FNCORE-30052-D-MC-RDM54c_int_pktmirror_net_1: 187"
+#}
+#ok: [zrdm6bmobt01cli001.wnsnet.rdm6b.tci.att.com] => (item=13) => {
+#    "msg": "FNCORE-30052-D-MC-RDM54c_int_mate_net_1: 616"
+#}
+#ok: [zrdm6bmobt01cli001.wnsnet.rdm6b.tci.att.com] => (item=14) => {
+#    "msg": "FNCORE-30052-D-MC-RDM54c_int_bp_net_1: 617"
+#}
+#ok: [zrdm6bmobt01cli001.wnsnet.rdm6b.tci.att.com] => (item=15) => {
+#    "msg": "FNCORE-30052-D-MC-RDM54c_cor_internal_net_1: 641"
+#}
+#ok: [zrdm6bmobt01cli001.wnsnet.rdm6b.tci.att.com] => (item=16) => {
+#    "msg": "FNCORE-30052-D-MC-RDM54c_mbms_sg_mb_bmsc_net_1: 608"
+ 

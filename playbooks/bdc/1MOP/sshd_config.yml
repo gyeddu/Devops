@@ -1,0 +1,48 @@
+---
+
+- hosts: mdf 
+  gather_facts: true
+  become: yes
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+    - name: Back up sshd_config
+      copy:
+        src: /etc/ssh/sshd_config
+        remote_src: yes
+        dest: /etc/ssh/sshd_config.{{ansible_date_time.iso8601_basic_short}}
+        owner: root
+        group: root
+        mode: '0600'
+
+    - name: parameters and their values
+      shell: egrep "^#?RSAAuthentication|^#?PubkeyAuthentication|^#?AuthorizedKeysFile" /etc/ssh/sshd_config 
+      register: result
+
+    - debug: var=result.stdout_lines
+
+      - name: set RSAAuth
+        lineinfile:
+          path: /etc/ssh/sshd_config
+          regexp: '^#?RSAAuthentication'
+          line: RSAAuthentication yes
+  
+      - name: set PubKeyAuth
+        lineinfile:
+          path: /etc/ssh/sshd_config
+          regexp: '^#?PubkeyAuthentication'
+          line: PubkeyAuthentication yes
+  
+      - name: set AuthKeysFile
+        lineinfile:
+          path: /etc/ssh/sshd_config
+          regexp: '^#?AuthorizedKeysFile'
+          line: AuthorizedKeysFile .ssh/authorized_keys
+          
+      - name: parameters and their values
+        shell: egrep "^#?RSAAuthentication|^#?PubkeyAuthentication|^#?AuthorizedKeysFile" /etc/ssh/sshd_config
+        register: result
+  
+      - debug: var=result.stdout_lines

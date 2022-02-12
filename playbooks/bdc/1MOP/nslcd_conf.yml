@@ -1,0 +1,51 @@
+---
+
+- hosts: mdf
+  gather_facts: false
+  become: yes
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+
+      - name: exclude uri ldap
+        lineinfile:
+          path: /etc/nslcd.conf 
+          regexp: '^uri\sldap.*\/'
+          line: '#uri ldap://127.0.0.1/'
+
+      - name: set restart-interval
+        lineinfile:
+          path: /etc/nslcd.conf 
+          regexp: '^base\s.*com'
+          line: '#base dc=example,dc=com'
+
+      - name: config ldap account access
+        lineinfile:
+          path: /etc/nslcd.conf 
+          line: |
+            # For ATT ldap account access
+            uri {{LDAP_Serv1}} {{LDAP_Serv2}} 
+            base dc=user,dc=gtac,dc=att,dc=net
+            binddn uid= {{LDAP_Bind}},ou=Special Users,dc=gtac,dc=att,dc=net
+            bindpw {{LDAP_Password}}
+            base passwd dc=user,dc=gtac,dc=att,dc=net
+            filter passwd (hohoservers= {{LDAP_Bind}})
+            base shadow dc=user,dc=gtac,dc=att,dc=net
+            filter shadow (hohoservers= {{LDAP_Bind}})
+            base group ou= {{LDAP_Group}},dc=gtac,dc=att,dc=net
+            bind_timelimit 2
+            timelimit 10
+            idle_timelimit 30
+            reconnect_sleeptime 0
+            reconnect_retrytime 1
+            ssl on
+            tls_reqcert never
+            tls_cacertdir /etc/openldap/cacerts
+
+      - name: parameters and their values
+        shell: egrep 'uri ldap|base dc' /etc/nslcd.conf 
+        register: result
+
+      - debug: var=result.stdout_lines

@@ -1,0 +1,19 @@
+---
+
+- hosts: mdfcp250
+  gather_facts: no
+
+  tasks:
+
+    - name: register tmgi from access.log
+      shell: egrep -wo '0x\w{12}' /var/ericsson/bm-sc/mdf-cp/log/access.log|cut -c 3- | uniq
+      register: result2
+
+    - name: iterate through result2 to get access messages with same tmgi
+      shell:
+        cmd: |
+          echo '                                                       ' >> bdcaccess.txt
+          echo '********************tmgi={{ item }}********************' >> bdcaccess.txt
+          echo '                                                       ' >> bdcaccess.txt
+          cat /var/ericsson/bm-sc/mdf-cp/log/access.log |grep {{ item }} >> bdcaccess.txt
+      with_items: "{{ result2.stdout_lines }}"

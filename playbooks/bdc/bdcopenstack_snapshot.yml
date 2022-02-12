@@ -1,0 +1,72 @@
+---
+
+- hosts: mdfcp224
+  gather_facts: false
+
+  tasks:
+    - name: Please wait, BDC cluster status being checked ...
+      become: yes
+      shell:
+        cmd: |
+          export PATH=$PATH:/usr/sbin
+          pcs status | grep pAppRes |awk '{print $4}'
+          pcs status | grep Masters |awk '{print $3}'
+      register: result1
+
+    - name: Cluster has following nodes in Active/Master status, snapshot of standby nodes is recommended first
+      debug:
+        msg: "{{ result1.stdout_lines }}"
+
+- hosts: os
+  gather_facts: false
+
+  tasks:
+    - name: Wait!...  checking the instances from nova
+      shell: . ~/FNCORE-30052-D-MC-RDM54c-openrc.sh;nova list|awk '{print $4}'|egrep 'fmgw|fbms'
+      register: result2
+
+    - name: Here is the list of bdc/mbmsgw instances!
+      debug:
+        msg: "{{result2.stdout_lines}}"
+
+    - name: Copy the instance from list above, you want to take snapshot of
+      pause:
+        prompt: Paste the instance name without quotations please
+      register: instance
+
+    - name: Wait!... removing the facts, pause added some info to your input.
+      set_fact:
+        my_instance: "{{ instance.user_input }}"
+
+    - name: Wait!... checking the instance satus!
+      shell: . ~/FNCORE-30052-D-MC-RDM54c-openrc.sh; nova list|grep {{my_instance}}|awk '{print $6}'
+      register: result3
+
+    - name: Here is instance status prior to shutdown
+      debug:
+        msg: "{{my_instance}} has '{{result3.stdout}}' status in Openstack"
+
+    - name: Shutting the instance now ... 
+      shell: . ~/FNCORE-30052-D-MC-RDM54c-openrc.sh; nova stop {{my_instance}}
+
+    - name: Wait!... let the instance cool down completely 
+      pause:
+        seconds: 30
+      
+    - name: Behold!... creating the snapshot now!
+      shell: . ~/FNCORE-30052-D-MC-RDM54c-openrc.sh; nova image-create {{my_instance}} "{{my_instance}}Snapshot-{{TS}}"
+
+    - name: Wait!... for the snapshot creation and uploading to Glance
+      pause:
+        seconds: 120
+
+    - name: Checking Glance for the snapshot 
+      shell: . ~/FNCORE-30052-D-MC-RDM54c-openrc.sh; openstack image list| grep "{{my_instance}}Snapshot-{{TS}}"
+      register: result4
+
+    - name: Here you have!
+      debug:
+        msg: "{{result4.stdout_lines}}"
+
+    - name: Time to bring the instace back up! Goodbye!
+      shell: . ~/FNCORE-30052-D-MC-RDM54c-openrc.sh; nova start {{my_instance}}

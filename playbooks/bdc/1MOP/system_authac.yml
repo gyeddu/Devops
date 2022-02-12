@@ -1,0 +1,28 @@
+---
+
+- hosts: mdf
+  gather_facts: false
+  become: yes
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+
+      - name: set paranoia
+        lineinfile:
+          path: /etc/pam.d/system-auth
+          insertafter: '^auth.*null.*pass'
+          line: 'auth sufficient pam_ldap.so try_first_pass ignore_unknown_user ignore_authinfo_unavail'
+
+      - name: set restart-interval
+        lineinfile:
+          path: /etc/pam.d/system-auth
+          insertafter: '^account.*pam_localuser.so'
+          line: 'account     sufficient    pam_ldap.so ignore_unknown_user ignore_authinfo_unavail'
+
+      - name: parameters and their values
+        shell: egrep '^auth.*null.*pass|^account.*pam_localuser.so' -A 1 /etc/pam.d/system-auth 
+        register: result
+
+      - debug: var=result.stdout_lines

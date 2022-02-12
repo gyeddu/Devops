@@ -1,0 +1,16 @@
+---
+# you can delete this playbook if your team does not use code cloud
+# replace the ccloud_repo_url variable with your team code cloud url
+
+- hosts: localhost
+  gather_facts: false
+
+  tasks:
+
+    - name: get source code
+      git:
+        repo: "https://codecloud.web.att.com/scm/st_labembms/security_tools.git"
+        dest: "embms_as266c"
+        update: yes
+        clone: yes
+        force: yes

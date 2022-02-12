@@ -1,0 +1,22 @@
+---
+
+- hosts: mdfcp2
+  gather_facts: false
+  become: yes
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+    - name: stopping pcs cluster
+      shell:
+        cmd: |
+          export PATH=$PATH:/usr/sbin
+          pcs status
+          pcs cluster stop
+
+    - name: Wait!... cluster is not currently running on this node
+      pause:
+        seconds: 30
+
+- include: bdc_ha.yml

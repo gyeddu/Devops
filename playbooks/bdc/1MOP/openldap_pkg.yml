@@ -1,0 +1,29 @@
+---
+
+  - hosts: mdf
+    gather_facts: false
+    become: yes
+
+    vars_files:
+      - zrdm52afbms01_enc.var
+
+    tasks:
+    - name: Copy file with owner and permissions
+      copy:
+        src: /home/qh378r/BDC_CP2_install.tar
+        dest: /var/tmp/BDC_CP2_install.tar
+#        owner: admin
+#        group: admin
+#        mode: '0640'
+
+    - name: check and extract
+      shell: '{{ item }}'
+      register: result
+
+      loop:
+        - cd /var/tmp      
+        - md5sum BDC_CP2_install.tar
+        - tar xvf BDC_CP2_install.tar
+        - ls -al BDC_CP2_install/OpenLDAP_RPMs/
+
+    - debug: var=result.stdout_lines

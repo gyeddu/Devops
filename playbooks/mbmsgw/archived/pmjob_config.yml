@@ -1,0 +1,44 @@
+---
+
+- hosts: mbmsgw250
+  gather_facts: false
+
+  tasks:
+
+    - name:  pmjob config
+      cli_command:
+        command: '{{ item }}'
+
+      with_items:
+      - config
+      - pm job mbmsgw-all
+      - requested-job-state active
+      - reporting-period    five-min
+      - granularity-period  five-min
+      - compression-type    gzip
+      - measurement-reader mbmsgw-all-reader
+      - group-ref            port
+      - measurement-type-ref mcast-outpackets
+      - measurement-reader mbmsgw-all-reader1
+      - group-ref board-information
+      - measurement-reader mbmsgw-all-reader3
+      - group-ref mbmsgw-mme
+      - measurement-reader mbmsgw-all-reader4
+      - group-ref session-and-payload
+      - measurement-reader mbmsgw-all-reader5
+      - group-ref sgmb-interface
+      - measurement-reader mbmsgw-all-reader6
+      - group-ref sm-interface
+      - commit
+      - exit
+
+    - name: let's wait to commit and exit
+      pause:
+        seconds: 30
+
+    - name: pm job running-config
+      cli_command:
+        command: show running-config pm job mbmsgw-all
+      register: result
+
+    - debug: var=result.stdout_lines

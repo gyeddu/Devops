@@ -1,0 +1,24 @@
+---
+
+- hosts: mbmsgw224
+  gather_facts: false
+  vars_prompt:
+    - name: "command1"
+      prompt: "What command would you like to run?"
+      private: no
+
+  tasks:
+    - name: registering the result
+      cli_command:
+        command: "{{ command1 }}"
+      register: result
+
+    - name: print the result
+      debug:
+              msg: "{{result.stdout_lines}}"
+
+# To use cli_command (introduced in Ansible 2.7) module on Ericsson ECCLI/IPOS network,
+# 'ansible_network_os' var needs to be set to 'eric_eccli' (introduced in Ansible 2.9)
+# Ansible 2.9 is therefore the min requirement for this playbook.
+# Input context and command in same line if command is context specific
+# Example: What command would you like to run?: context m1 show pim neighbor

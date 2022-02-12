@@ -1,0 +1,39 @@
+---
+
+- hosts: mbms224
+  gather_facts: false
+
+  tasks:
+    - name: copy zrdm54cfmgw01_yyyy-mm-dd.cfg form ansible home to MBMS GW
+      net_put:
+        src: zrdm54cfmgw01_yyyy-mm-dd.cfg
+        protocol: sftp
+        dest: /flash/zrdm54cfmgw01_yyyy-mm-dd.cfg
+
+#optional
+    - name: list file
+      find:
+        paths: /flash
+        patterns: zrdm54cfmgw01*.cfg
+#list file
+
+    - name: restore from the file
+      cli_command:
+        command: '{{ item }}'
+
+      with_items:
+      - config
+      - load replace zrdm54cfmgw01_yyyy-mm-dd.cfg
+
+    - name: let's wait for replaced config to get parsed
+      pause:
+        seconds: 60
+
+    - name: commit the restoration
+      cli_command:
+        command: '{{ item }}'
+
+      with_items:
+      - config
+      - commit
+      - exit

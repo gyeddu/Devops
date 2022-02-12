@@ -1,0 +1,63 @@
+---
+
+- hosts: mbmsgw250
+  gather_facts: false
+
+  tasks:
+
+    - name: post spin-up basic config
+      cli_command:
+        command: '{{ item }}'
+
+      with_items:
+      - config
+      - system hostname zrdm55afmgw01
+      - system timeout session idle 99999
+      - contexts service multiple-contexts true
+      - commit
+      - contexts banner login "\n+------------------------------------------------------------------------------+\n| WARNING!  THIS IS A PRIVATE AND PROPRIETARY SYSTEM OF AT&T MOBILITY.         |\n| ANY UNAUTHORIZED ACCESS TO OR MISUSE OF AT&T SYSTEMS OR DATA MAY             |\n| RESULT IN CIVIL AND/OR CRIMINAL PROSECUTION, EMPLOYEE DISCIPLINE UP TO       |\n| AND INCLUDING DISCHARGE, OR THE TERMINATION OF VENDOR/SERVICE CONTRACTS.     |\n| AT&T ACTIVELY MONITORS AND AUDITS ACCESS AND USE OF THIS SYSTEM.             |\n+------------------------------------------------------------------------------+\n"
+      - commit
+      - system ntp server 150.234.210.5
+      - udp address 150.234.210.5
+      - association-type server
+      - version          3
+      - context          local
+      - commit
+      - contexts context local
+      - service snmp-server
+      - contexts snmp server enterprise ericsson
+      - contexts snmp view all internet
+      - restriction included
+      - contexts snmp target DCAE_SAM_Collector
+      - transport ip 107.124.224.22
+      - transport security-params security-name community-string community-string ATT-eMBMS-Lab
+      - transport security-params security-name community-string version v2c
+      - transport security-params view all
+      - contexts snmp community ATT-eMBMS-Lab
+      - view all access read-write
+      - commit
+      - contexts context local
+      - logging syslog 10.10.10.1
+      - logging syslog 20.20.20.1
+      - commit
+      - contexts service multiple-contexts true
+      - commit
+      - asp default_asp_attr management/1
+      - shutdown false
+      - asp default_asp_attr 1/1
+      - shutdown false
+      - asp default_asp_attr 2/1
+      - shutdown false
+      - asp default_asp_attr 3/1
+      - shutdown false
+      - asp default_asp_attr 4/1
+      - shutdown false
+      - commit
+      - asp pool epgpool service epg
+      - asp management/1
+      - asp 1/1
+      - asp 2/1
+      - asp 3/1
+      - asp 4/1
+      - commit
+      - exit

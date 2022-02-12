@@ -1,0 +1,29 @@
+---
+
+- hosts: mdfcp250
+  gather_facts: false
+
+  tasks:
+    - name: Please wait, BDC cluster status being checked ...
+      become: yes
+      shell:
+        cmd: |
+          export PATH=$PATH:/usr/sbin
+          pcs status | grep pAppRes |awk '{print $4}'
+          pcs status | grep Masters |awk '{print $3}'
+      register: result1
+
+    - name: Cluster has following nodes in Active/Master status
+      debug:
+        msg: "{{ result1.stdout_lines }}"
+
+
+#TASK [Cluster has following nodes in Active/Master status] ********************************************************************************************************************************
+#ok: [107.124.250.21] => {
+#    "msg": [
+#        "zrdm54cfbms01mup001-hb",
+#        "zrdm54cfbms01mcp001-hb",
+#        "zrdm54cfbms01mdb002-hb"
+#    ]
+#}
+

@@ -1,0 +1,26 @@
+---
+
+- hosts: zrdm55afmgw01
+  gather_facts: false
+
+  vars_files:
+    - zrdm55afmgw01_enc.var
+
+  tasks:
+
+    - name: hostname and system timeout
+      cli_command:
+        command: '{{ item }}'
+      register: result 
+        
+      loop:
+        - show fm alarm
+        - show memory
+        - show running-config system hostname
+        - show running-config system timeout
+        - show running-config contexts service
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+    - debug: var=result.results[2].stdout_lines
+    - debug: var=result.results[3].stdout_lines
+    - debug: var=result.results[4].stdout_lines

@@ -1,0 +1,35 @@
+---
+
+- hosts: mdf 
+  gather_facts: false
+  become: yes
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+
+      - name: set passwd
+        lineinfile:
+          path: /etc/nsswitch.conf
+          regexp: '^passwd.*sss'
+          line: 'passwd:     files ldap'
+
+      - name: set shadow
+        lineinfile:
+          path: /etc/nsswitch.conf
+          regexp: '^shadow.*sss'
+          line: 'shadow:     files ldap'
+
+      - name: set group 
+        lineinfile:
+          path: /etc/nsswitch.conf
+          regexp: '^group.*sss'
+          line: 'group:      files ldap'
+
+
+      - name: parameters and their values
+        shell: egrep "passwd|shadow|group" /etc/nsswitch.conf
+        register: result
+
+      - debug: var=result.stdout_lines

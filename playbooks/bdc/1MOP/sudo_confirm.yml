@@ -1,0 +1,16 @@
+---
+
+- hosts: mdf
+  gather_facts: false
+  become: yes
+
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+
+      - name: system auth confirmation
+        shell: grep system-auth /etc/pam.d/sudo
+        register: result
+
+      - debug: var=result.stdout_lines

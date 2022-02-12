@@ -1,0 +1,36 @@
+---
+
+- hosts: mdf
+  become: yes
+ 
+  vars_files:
+    - zrdm52afbms01_enc.var
+
+  tasks:
+
+    - name: Back up communityCfg.xml
+      copy:
+        src: /usr/local/esa/conf/communityCfg.xml
+        remote_src: yes
+        dest: /usr/local/esa/conf/communityCfg.xml.{{ansible_date_time.iso8601_basic_short}}
+        owner: root
+        group: root
+        mode: '0600'
+
+    - shell: ls -al /usr/local/esa/conf/communityCfg.xml*
+      register: result
+    - debug: var=result.stdout_lines
+
+    - name: config snmpd
+      lineinfile:
+        insertafter: "</community>"
+        path: /usr/local/esa/conf/communityCfg.xml
+        line: >
+          	<community active="yes">
+          		<communityString>ATT-eMBMS-Lab</communityString>
+          		<securityName>v1v2ReadWriteSecName</securityName>
+          	</community>'
+
+    - shell: cat /usr/local/esa/conf/communityCfg.xml
+      register: result
+    - debug: var=result.stdout_lines

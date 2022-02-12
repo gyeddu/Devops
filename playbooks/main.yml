@@ -1,0 +1,6 @@
+---
+  - name: Run all
+    hosts: all
+
+    roles:
+      - configure

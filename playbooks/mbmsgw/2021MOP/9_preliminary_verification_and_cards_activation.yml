@@ -1,0 +1,116 @@
+---
+
+- hosts: zrdm55afmgw01
+  gather_facts: false
+
+  vars_files:
+    - zrdm55afmgw01_enc.var
+
+  tasks:
+
+    - name: post spin-up check-points
+      cli_command:
+        command: '{{ item }}'
+      register: result   
+
+      loop:
+        - show card
+        - config
+        - card 1 type vsfo
+        - card 2 type vsfo
+        - card 3 type vsfo
+        - card 4 type vsfo
+        - top
+        - show config
+        - commit
+        - exit
+    - debug: var=result.results[0].stdout_lines
+
+    - name: let's wait for cards to get in-service
+      pause:
+        seconds: 30
+
+
+    - name: confirm results
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      loop:
+        - show chassis
+        - show card 1 detail
+        - show card 2 detail
+        - show card 3 detail
+        - show card 4 detail
+        - show lm fingerprint
+ 
+
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+    - debug: var=result.results[2].stdout_lines
+    - debug: var=result.results[3].stdout_lines
+    - debug: var=result.results[4].stdout_lines
+    - debug: var=result.results[5].stdout_lines
+
+    - name: advanced services processor (asp)
+      cli_command:
+        command: '{{ item }}'
+      register: result 
+
+      loop:
+        - config
+        - asp default_asp_attr management/1
+        - shutdown false
+        - asp default_asp_attr 1/1
+        - shutdown false
+        - asp default_asp_attr 2/1
+        - shutdown false
+        - asp default_asp_attr 3/1
+        - shutdown false
+        - asp default_asp_attr 4/1
+        - shutdown false
+        - top
+        - show config  
+        - commit
+        - exit
+
+    - debug: var=result.results[12].stdout_lines
+
+          
+    - name: let's wait to commit and exit
+      pause:
+        seconds: 30
+
+    - name: advanced services processor (asp)
+      cli_command:
+        command: '{{ item }}'
+      register: result  
+
+      loop:
+        - config
+        - asp pool epgpool service epg
+        - asp management/1
+        - asp 1/1
+        - asp 2/1
+        - asp 3/1
+        - asp 4/1
+        - top
+        - show config
+        - commit
+        - exit
+
+    - debug: var=result.results[8].stdout_lines
+
+
+    - name: let's wait to commit and exit
+      pause:
+        seconds: 30
+
+    - name: show asp
+      cli_command:
+        command: show asp
+      register: result
+
+    - debug: var=result.stdout_lines
+              
+      

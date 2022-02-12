@@ -1,0 +1,141 @@
+---
+
+- hosts: zrdm55afmgw01
+  gather_facts: false
+
+  vars_files:
+    - zrdm55afmgw01_enc.var
+
+  tasks:
+
+    - name: contexts configuration
+      cli_command:
+        command: '{{ item }}'
+
+      loop:
+        - config
+        - contexts context m1 router bfd interface if-m1-1@m1 minimum transmit-interval 300
+        - minimum receive-interval 300
+        - detection-multiplier 3
+         
+        - router bfd interface if-m1-2@m1 minimum transmit-interval 300
+        - minimum receive-interval 300
+        - detection-multiplier 3
+         
+        - router pim address-family ipv6 ssm range {{ssm_range}}
+        - router pim address-family ipv6 interface if-m1-1@m1 sparse-mode
+        - bfd true
+        - router pim address-family ipv6 interface if-m1-2@m1 sparse-mode
+        - bfd true
+        
+        - qos-protocol arp priority ef
+         
+        - ipv6 static-route {{m1_network}} next-hop-address {{m1_gw1}} bfd strict
+        - ipv6 static-route {{m1_network}} next-hop-address {{m1_gw2}} bfd strict
+        - top
+          
+        - contexts context sm router bfd interface if-sm-1@sm minimum transmit-interval 300
+        - minimum receive-interval 300
+        - detection-multiplier 3
+        - router bfd interface if-sm-2@sm minimum transmit-interval 300
+        - minimum receive-interval 300
+        - detection-multiplier 3
+         
+        - router bgp {{sm_bgp_local}} router-id {{bgp_router_id}}
+        - address-family ipv4 unicast redistribute epg
+         
+        - neighbor {{sm_neigh1}} choice external advertisement-interval 0 bfd
+        - ebgp-multihop 3 update-source interface if-sm-1@sm
+        - remote-as {{sm_bgp_remote}} address-family ipv4 unicast
+         
+        - neighbor {{sm_neigh2}} choice external advertisement-interval 0 bfd
+        - ebgp-multihop 3 update-source interface if-sm-1@sm
+        - remote-as {{sm_bgp_remote}} address-family ipv4 unicast
+           
+        - neighbor {{sm_neigh3}} choice external advertisement-interval 0 bfd
+        - ebgp-multihop 3 update-source interface if-sm-2@sm
+        - remote-as {{sm_bgp_remote}} address-family ipv4 unicast
+         
+        - neighbor {{sm_neigh4}} choice external advertisement-interval 0 bfd
+        - ebgp-multihop 3 update-source interface if-sm-2@sm
+        - remote-as {{sm_bgp_remote}} address-family ipv4 unicast
+        - top          
+
+        - contexts context sgimb router bfd interface if-sgimb-1@sgimb minimum transmit-interval 300
+        - minimum receive-interval 300 
+        - detection-multiplier 3
+        
+        - router bfd interface if-sgimb-2@sgimb minimum transmit-interval 300
+        - minimum receive-interval 300
+        - detection-multiplier 3
+         
+        - router bgp {{sgimb_bgp_local}} router-id {{bgp_router_id}}
+        - address-family ipv6 unicast redistribute epg
+         
+        - neighbor {{sgimb_neigh1}} choice external advertisement-interval 0 bfd
+        - ebgp-multihop 3 update-source interface if-sgimb-1@sgimb
+        - remote-as {{sgimb_bgp_remote}} address-family ipv6 unicast
+         
+        - neighbor {{sgimb_neigh2}} choice external advertisement-interval 0 bfd
+        - ebgp-multihop 3 update-source interface if-sgimb-1@sgimb
+        - remote-as {{sgimb_bgp_remote}} address-family ipv6 unicast
+         
+        - neighbor {{sgimb_neigh3}} choice external advertisement-interval 0 bfd
+        - ebgp-multihop 3 update-source interface if-sgimb-2@sgimb
+        - remote-as {{sgimb_bgp_remote}} address-family ipv6 unicast
+         
+        - neighbor {{sgimb_neigh4}} choice external advertisement-interval 0 bfd
+        - ebgp-multihop 3 update-source interface if-sgimb-2@sgimb
+        - remote-as {{sgimb_bgp_remote}} address-family ipv6 unicast
+        - top
+
+        - contexts context sgmb router bfd interface if-sgmb-1@sgmb minimum transmit-interval 300
+        - minimum receive-interval 300
+        - detection-multiplier 3
+         
+        - router bfd interface if-sgmb-2@sgmb minimum transmit-interval 300
+        - minimum receive-interval 300
+        - detection-multiplier 3
+         
+        - router bgp {{sgmb_bgp_local}} router-id {{bgp_router_id}}
+        - address-family ipv6 unicast redistribute epg
+         
+        - neighbor {{sgmb_neigh1}} choice external advertisement-interval 0 bfd
+        - ebgp-multihop 3 update-source interface if-sgmb-1@sgmb
+        - remote-as {{sgmb_bgp_remote}} address-family ipv6 unicast
+         
+        - neighbor {{sgmb_neigh2}} choice external advertisement-interval 0 bfd
+        - ebgp-multihop 3 update-source interface if-sgmb-1@sgmb
+        - remote-as {{sgmb_bgp_remote}} address-family ipv6 unicast
+         
+        - neighbor {{sgmb_neigh3}} choice external advertisement-interval 0 bfd
+        - ebgp-multihop 3 update-source interface if-sgmb-2@sgmb
+        - remote-as {{sgmb_bgp_remote}} address-family ipv6 unicast
+         
+        - neighbor {{sgmb_neigh4}} choice external advertisement-interval 0 bfd
+        - ebgp-multihop 3 update-source interface if-sgmb-2@sgmb
+        - remote-as {{sgmb_bgp_remote}} address-family ipv6 unicast
+        - top
+        - commit
+        - exit  
+
+    - name: let's wait to commit and exit, DO NOT hit any key
+      pause:
+        seconds: 30
+
+    - name: show contexts running-config
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      loop:
+        - show running-config contexts context m1
+        - show running-config contexts context sm
+        - show running-config contexts context sgimb
+        - show running-config contexts context sgmb
+
+    - debug: var=result.results[0].stdout_lines
+    - debug: var=result.results[1].stdout_lines
+    - debug: var=result.results[2].stdout_lines
+    - debug: var=result.results[3].stdout_lines
+      

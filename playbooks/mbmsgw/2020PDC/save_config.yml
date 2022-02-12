@@ -1,0 +1,27 @@
+---
+
+- hosts: '{{MBMSGW_OAM_IP}}'
+
+  vars_files:
+    - zrdm52afmgw01_enc.var
+
+  tasks:
+    
+    - name: restore from the file
+      cli_command:
+        command: '{{ item }}'
+
+      loop:
+        - config
+        - save {{BackupFile}}
+
+    - name: copy license file form ansible home to MBMS GW
+      net_get:
+        src: /flash/{{BackupFile}}
+        protocol: scp
+        dest: /home/qh378r/{{BackupFile}}.{{ansible_date_time.iso8601_basic_short}}.xml
+
+    - name: remove file
+      file:
+        path: /flash/{{BackupFile}}
+        state: absent

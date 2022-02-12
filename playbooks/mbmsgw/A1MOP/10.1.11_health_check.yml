@@ -1,0 +1,180 @@
+---
+
+- hosts: zrdm55afmgw01
+
+
+  vars_files:
+    - zrdm55afmgw01_enc.var
+
+  tasks:
+
+    - name: health check 
+      cli_command:
+        command: '{{ item }}'
+      register: result
+
+      loop:
+        - show card
+        - show port
+        - show bindings
+        - show fm alarm
+        - show circuit counters
+        - show system status
+        - show context all
+        - show ip route all all-context | nomore | include "> e B|> S" ; show ipv6 route all all-context | nomore | include "> e B|> S"
+        - show bfd session all-context
+        - show bfd session ipv6 all-context
+        - show bgp neighbor summary all-contexts
+        - epg node diameter diameter-application-system embms status
+        - epg mbmsgw interface sm peer-status
+        - show asp
+        - epg node status  
+
+          
+    - debug: 
+        msg: 
+          - '#{{result.results[0].item}}'  
+          - '{{result.results[0].stdout_lines}}'
+    - debug:
+        msg:
+          - '#{{result.results[1].item}}'
+          - '{{result.results[1].stdout_lines}}'
+    - debug:
+        msg:
+          - '#{{result.results[2].item}}'
+          - '{{result.results[2].stdout_lines[0]}}'
+          - '{{result.results[2].stdout_lines[2]}}'
+          - '{{result.results[2].stdout_lines[3]}}'
+          - '{{result.results[2].stdout_lines[4]}}'
+          - '{{result.results[2].stdout_lines[5]}}'
+          - '{{result.results[2].stdout_lines[6]}}'
+          - '{{result.results[2].stdout_lines[7]}}'
+          - '{{result.results[2].stdout_lines[8]}}'
+          - '{{result.results[2].stdout_lines[9]}}'
+          - '{{result.results[2].stdout_lines[10]}}'
+            
+    - debug:
+        msg:
+          - '#{{result.results[3].item}}'
+          - '{{result.results[3].stdout_lines}}'
+    - debug:
+        msg:
+          - '#{{result.results[4].item}}'
+          - '{{result.results[4].stdout_lines}}'
+    - debug:
+        msg:
+          - '#{{result.results[5].item}}'
+          - '{{result.results[5].stdout_lines}}'
+    - debug:
+        msg:
+          - '#{{result.results[6].item}}'
+          - '{{result.results[6].stdout_lines}}'
+    - debug:
+        msg:
+          - '#{{result.results[7].item}}'
+          - '{{result.results[7].stdout_lines}}'           
+    - debug:
+        msg:
+          - '#{{result.results[8].item}}, filtered for sm context'
+          - '{{result.results[8].stdout_lines[8]}}'
+          - '{{result.results[8].stdout_lines[9]}}'
+          - '{{result.results[8].stdout_lines[10]}}'
+          - '{{result.results[8].stdout_lines[11]}}'
+          - '{{result.results[8].stdout_lines[12]}}'
+          - '{{result.results[8].stdout_lines[13]}}'
+          - '{{result.results[8].stdout_lines[14]}}'
+          - '{{result.results[8].stdout_lines[15]}}'
+    - debug:
+        msg:
+          - '#{{result.results[9].item}}'
+          - '{{result.results[9].stdout_lines[4]}}'
+          - '{{result.results[9].stdout_lines[5]}}'
+          - '{{result.results[9].stdout_lines[6]}}'
+          - '{{result.results[9].stdout_lines[7]}}'
+          - '{{result.results[9].stdout_lines[8]}}'
+          - '{{result.results[9].stdout_lines[9]}}'
+          - '{{result.results[9].stdout_lines[10]}}'
+          - '{{result.results[9].stdout_lines[11]}}'
+          - '{{result.results[9].stdout_lines[12]}}'
+          - '{{result.results[9].stdout_lines[13]}}'
+          - '{{result.results[9].stdout_lines[14]}}'
+          - '{{result.results[9].stdout_lines[15]}}'
+          - '{{result.results[9].stdout_lines[16]}}'
+          - '{{result.results[9].stdout_lines[17]}}'
+          - '{{result.results[9].stdout_lines[18]}}'
+          - '{{result.results[9].stdout_lines[19]}}'
+          - '{{result.results[9].stdout_lines[24]}}'
+          - '{{result.results[9].stdout_lines[25]}}'
+          - '{{result.results[9].stdout_lines[28]}}'
+          - '{{result.results[9].stdout_lines[29]}}'
+          - '{{result.results[9].stdout_lines[30]}}'
+          - '{{result.results[9].stdout_lines[31]}}'
+          - '{{result.results[9].stdout_lines[32]}}'
+          - '{{result.results[9].stdout_lines[33]}}'
+          - '{{result.results[9].stdout_lines[34]}}'
+          - '{{result.results[9].stdout_lines[35]}}'
+          - '{{result.results[9].stdout_lines[36]}}'
+          - '{{result.results[9].stdout_lines[37]}}'
+          - '{{result.results[9].stdout_lines[40]}}'
+          - '{{result.results[9].stdout_lines[41]}}'
+          - '{{result.results[9].stdout_lines[42]}}'
+          - '{{result.results[9].stdout_lines[43]}}'
+          - '{{result.results[9].stdout_lines[43]}}'
+          - '{{result.results[9].stdout_lines[45]}}'
+          - '{{result.results[9].stdout_lines[46]}}'
+          - '{{result.results[9].stdout_lines[47]}}'
+            
+            
+    - debug:
+        msg:
+          - '#{{result.results[10].item}}'
+          - '{{result.results[10].stdout_lines[6]}}'
+          - '{{result.results[10].stdout_lines[7]}}'
+          - '{{result.results[10].stdout_lines[8]}}'
+          - '{{result.results[10].stdout_lines[9]}}'
+          - '{{result.results[10].stdout_lines[32]}}'
+          - '{{result.results[10].stdout_lines[33]}}'
+          - '{{result.results[10].stdout_lines[34]}}'
+          - '{{result.results[10].stdout_lines[35]}}'
+          - '{{result.results[10].stdout_lines[58]}}'
+          - '{{result.results[10].stdout_lines[59]}}'
+          - '{{result.results[10].stdout_lines[60]}}'
+          - '{{result.results[10].stdout_lines[61]}}'
+            
+    - debug:
+        msg:
+          - '#{{result.results[11].item}}'
+          - '{{result.results[11].stdout_lines[4]}}'
+          - '{{result.results[11].stdout_lines[8]}}'
+          - '{{result.results[11].stdout_lines[16]}}'
+          - '{{result.results[11].stdout_lines[19]}}'
+          - '{{result.results[11].stdout_lines[27]}}'
+            
+    - debug:
+        msg:
+          - '#{{result.results[12].item}}'
+          - '{{result.results[12].stdout_lines[3]}}'
+          - '{{result.results[12].stdout_lines[5]}} for{{result.results[12].stdout_lines[4]}}'
+          - '{{result.results[12].stdout_lines[8]}}'
+          - '{{result.results[12].stdout_lines[10]}} for{{result.results[12].stdout_lines[9]}}'
+          - '{{result.results[12].stdout_lines[13]}}'
+          - '{{result.results[12].stdout_lines[15]}} for{{result.results[12].stdout_lines[14]}}'
+          - '{{result.results[12].stdout_lines[17]}} for{{result.results[12].stdout_lines[16]}}'
+          - '{{result.results[12].stdout_lines[20]}}'
+          - '{{result.results[12].stdout_lines[22]}} for{{result.results[12].stdout_lines[21]}}'
+            
+    - debug:
+        msg:
+          - '#{{result.results[13].item}}'
+          - '{{result.results[13].stdout_lines}}'
+    - debug:
+        msg:
+          - '#{{result.results[14].item}}'
+          - '{{result.results[14].stdout_lines[3]}}'
+          - '{{result.results[14].stdout_lines[11]}}'
+          - '{{result.results[14].stdout_lines[14]}}'
+          - '{{result.results[14].stdout_lines[22]}}'
+          - '{{result.results[14].stdout_lines[25]}}'
+          - '{{result.results[14].stdout_lines[33]}}'
+          - '{{result.results[14].stdout_lines[37]}}'
+          - '{{result.results[14].stdout_lines[45]}}'            

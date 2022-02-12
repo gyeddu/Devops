@@ -1,0 +1,34 @@
+#!/usr/bin/python3
+
+import sys
+import re
+import pathlib
+
+sys.argv[2] = re.sub('sai_start=', '', sys.argv[2])
+sys.argv[3] = re.sub('sai_end=', '', sys.argv[3])
+sys.argv[4] = re.sub('sgmb_gwhost=', '', sys.argv[4])
+sys.argv[5] = re.sub('sgmb_gwrealm=', '', sys.argv[5])
+sys.argv[6] = re.sub('mme1=', '', sys.argv[6])
+sys.argv[7] = re.sub('mme2=', '', sys.argv[7])
+
+try:
+    with open(sys.argv[1], 'w+') as f:
+        f.write('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n')
+        f.write('<saiProvisioningList xmlns="http://www.ericsson.com/embms/bmsc/configuration" version="1.0">\n')
+        for i in range(int(sys.argv[2]), int(sys.argv[3]) + 1):
+            f.write('\n   <saiAction>\n')
+            f.write('       <action>create</action>\n')
+            f.write('       <saiInfo>\n')
+            f.write('           <serviceAreaId>'+hex(i).split('x')[-1].zfill(4).upper()+'</serviceAreaId>\n')
+            f.write('           <mbmsGWHost>'+sys.argv[4]+'</mbmsGWHost>\n')
+            f.write('           <mbmsGWRealm>'+sys.argv[5]+'</mbmsGWRealm>\n')
+            f.write('           <mmeIpaddress>'+sys.argv[6]+'</mmeIpaddress>\n')
+            f.write('           <mmeIpaddress>'+sys.argv[7]+'</mmeIpaddress>\n')
+            f.write('       </saiInfo>\n')
+            f.write('   </saiAction>\n')
+        f.write('</saiProvisioningList>\n')
+except Exception as exception:
+    print("Exception: {}".format(type(exception).__name__))
+    print("Exception message: {}".format(exception))
+
+print(sys.argv[1] + ' file has been created in ' + str(pathlib.Path(sys.argv[1]).parent.resolve()))
